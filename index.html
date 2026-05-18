@@ -49,6 +49,10 @@
             border-color: #00ffcc;
             box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
         }
+        .input-error {
+            border-color: #ff3366 !important;
+            box-shadow: 0 0 8px rgba(255, 51, 102, 0.3) !important;
+        }
         button {
             background: transparent;
             color: #00ffcc;
@@ -88,10 +92,11 @@
             margin-top: 10px;
         }
         #remoteNameDisplay {
-            color: #ffaa00; /* Yellow highlight for the joined person's name */
+            color: #ffaa00; 
             font-size: 18px;
             margin-top: 15px;
-            min-height: 20px;
+            min-height: 24px; /* Fixed height so design doesn't jump */
+            font-weight: bold;
         }
         audio {
             display: none;
@@ -102,15 +107,15 @@
 
     <div class="container" id="initScreen">
         <h2>SECURE COMMS</h2>
-        <input type="text" id="userNameInput" placeholder="Enter your Alias/Name..." autocomplete="off">
-        <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Tap below to initialize microphone.</p>
-        <button id="enableMicBtn">Enable Mic & Enter</button>
-        <p id="errorMsg" style="color: #ff3366; font-size: 12px; display: none; margin-top: 15px;"></p>
+        <input type="text" id="userNameInput" placeholder="Enter your Name (Compulsory)" autocomplete="off">
+        <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Identity required to proceed.</p>
+        <button id="enableMicBtn">Enter Room</button>
+        <p id="errorMsg" style="color: #ff3366; font-size: 13px; display: none; margin-top: 15px; font-weight: bold;"></p>
     </div>
 
     <div class="container" id="mainMenu">
         <h2>VOICE ROOM</h2>
-        <p style="color: #00ffcc; font-size: 12px; margin-top: -15px;">Mic Ready ✅</p>
+        <p id="welcomeUserText" style="color: #00ffcc; font-size: 14px; margin-top: -15px; font-weight: bold;"></p>
         <button id="createBtn">Create Room</button>
         <button id="joinBtn">Join Room</button>
     </div>
@@ -129,7 +134,9 @@
     <script>
         let peer;
         let localStream;
-        let myName = "Anonymous"; // Default name
+        let currentConn; // To track active text connection
+        let currentCall; // To track active voice connection
+        let myName = ""; 
         const secretPrefix = "phantom-call-"; 
 
         const initScreen = document.getElementById('initScreen');
@@ -138,6 +145,7 @@
         const errorMsg = document.getElementById('errorMsg');
         
         const mainMenu = document.getElementById('mainMenu');
+        const welcomeUserText = document.getElementById('welcomeUserText');
         const createBtn = document.getElementById('createBtn');
         const joinBtn = document.getElementById('joinBtn');
         
@@ -148,26 +156,42 @@
         const endBtn = document.getElementById('endBtn');
         const remoteAudio = document.getElementById('remoteAudio');
 
-        // --- STEP 1: GET NAME & ENABLE MIC ---
+        // Function: Jab samne wala call cut kare
+        function handleRemoteHangup() {
+            remoteNameDisplay.innerText = ""; // Naam hata do
+            statusText.innerText = "Samne wale ne call cut kar diya ❌"; // Status change
+            statusText.style.color = "#ff3366";
+            remoteAudio.srcObject = null; // Awaaz band
+        }
+
+        // --- COMPULSORY NAME & MIC ---
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
-            if (enteredName !== "") {
-                myName = enteredName;
+            if (enteredName === "") {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "⚠️ Aage badhne ke liye apna naam daalna zaroori hai!";
+                userNameInput.classList.add('input-error'); 
+                return; 
             }
+
+            myName = enteredName;
+            userNameInput.classList.remove('input-error');
+            errorMsg.style.display = 'none';
+            enableMicBtn.innerText = "Requesting Mic...";
             
-            enableMicBtn.innerText = "Requesting...";
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 initScreen.style.display = 'none';
                 mainMenu.style.display = 'block';
+                welcomeUserText.innerText = "Welcome, " + myName + " ✅"; 
             } catch (error) {
-                enableMicBtn.innerText = "Enable Mic & Enter";
+                enableMicBtn.innerText = "Enter Room";
                 errorMsg.style.display = 'block';
-                errorMsg.innerText = "Error: Mic access denied. Agar aap mobile par hain, to is file ko https:// server par host karna padega.";
+                errorMsg.innerText = "Error: Mic access denied. Kripya permission allow karein.";
             }
         };
 
-        // --- STEP 2: CREATE ROOM ---
+        // --- CREATE ROOM ---
         createBtn.onclick = () => {
             const roomKey = Math.floor(1000 + Math.random() * 9000).toString();
             roomIdDisplay.innerText = roomKey;
@@ -178,22 +202,29 @@
                 mainMenu.style.display = 'none';
                 roomArea.style.display = 'block';
                 statusText.innerText = "Waiting for someone to join...";
+                statusText.style.color = "#aaa";
             });
 
-            // Listen for Text/Data Connection (For exchanging names)
+            // Data Connection (For Name & Hangup Signal)
             peer.on('connection', (conn) => {
+                currentConn = conn;
                 conn.on('open', () => {
-                    conn.send({ name: myName }); // Send my name to the joiner
+                    conn.send({ type: 'name', value: myName }); 
                 });
                 conn.on('data', (data) => {
-                    if (data.name) {
-                        remoteNameDisplay.innerText = "Connected with: " + data.name;
+                    if (data.type === 'name') {
+                        remoteNameDisplay.innerText = "Call with: " + data.value;
+                    }
+                    if (data.type === 'hangup') { // Agar samne wale ne end dabaya
+                        handleRemoteHangup();
                     }
                 });
+                conn.on('close', handleRemoteHangup); // Agar samne wale ka net chala jaye
             });
 
-            // Listen for Voice Connection
+            // Voice Connection
             peer.on('call', (call) => {
+                currentCall = call;
                 call.answer(localStream);
                 statusText.innerText = "Call active! 🎙️";
                 statusText.style.color = "#00ffcc";
@@ -201,10 +232,11 @@
                 call.on('stream', (remoteStream) => {
                     remoteAudio.srcObject = remoteStream;
                 });
+                call.on('close', handleRemoteHangup);
             });
         };
 
-        // --- STEP 3: JOIN ROOM ---
+        // --- JOIN ROOM ---
         joinBtn.onclick = () => {
             const roomKey = prompt("Enter the 4-digit Room Key:");
             
@@ -217,26 +249,31 @@
                     roomIdDisplay.innerText = roomKey;
                     statusText.innerText = "Connecting to room...";
 
-                    // 1. Start Text/Data Connection (For exchanging names)
                     const conn = peer.connect(secretPrefix + roomKey);
+                    currentConn = conn;
+                    
                     conn.on('open', () => {
-                        conn.send({ name: myName }); // Send my name to the creator
+                        conn.send({ type: 'name', value: myName }); 
                     });
                     conn.on('data', (data) => {
-                        if (data.name) {
-                            remoteNameDisplay.innerText = "Connected with: " + data.name;
+                        if (data.type === 'name') {
+                            remoteNameDisplay.innerText = "Call with: " + data.value;
+                        }
+                        if (data.type === 'hangup') {
+                            handleRemoteHangup();
                         }
                     });
+                    conn.on('close', handleRemoteHangup);
 
-                    // 2. Start Voice Connection
                     const call = peer.call(secretPrefix + roomKey, localStream);
+                    currentCall = call;
 
                     call.on('stream', (remoteStream) => {
                         statusText.innerText = "Call active! 🎙️";
                         statusText.style.color = "#00ffcc";
                         remoteAudio.srcObject = remoteStream;
                     });
-
+                    call.on('close', handleRemoteHangup);
                     call.on('error', () => {
                         statusText.innerText = "Connection failed. Wrong key?";
                         statusText.style.color = "#ff3366";
@@ -247,11 +284,19 @@
             }
         };
 
-        // --- STEP 4: END CALL ---
+        // --- END CALL LOGIC ---
         endBtn.onclick = () => {
-            if (peer) peer.destroy(); 
-            if (localStream) localStream.getTracks().forEach(track => track.stop()); 
-            location.reload(); 
+            // Samne wale ko batao ki main call cut kar raha hu
+            if (currentConn && currentConn.open) {
+                currentConn.send({ type: 'hangup' });
+            }
+            
+            // Thoda sa delay (100ms) dekar connection clean karo taaki message pauch jaye
+            setTimeout(() => {
+                if (peer) peer.destroy(); 
+                if (localStream) localStream.getTracks().forEach(track => track.stop()); 
+                location.reload(); 
+            }, 100);
         };
     </script>
 </body>
