@@ -22,7 +22,7 @@ let connections = {};
 let calls = {};       
 let visualizerFrames = {}; 
 
-// --- DOM ELEMENTS ---
+// DOM Elements
 const initScreen = document.getElementById('initScreen');
 const enableMicBtn = document.getElementById('enableMicBtn');
 const userNameInput = document.getElementById('userNameInput');
@@ -171,7 +171,7 @@ enableMicBtn.onclick = async () => {
         ringGain.gain.value = 0; 
         const osc = audioCtx.createOscillator();
         osc.type = 'sawtooth';
-        osc.frequency.value = 60; // Hacker buzz
+        osc.frequency.value = 60; // Deep hacker buzz
         osc.start();
 
         micSource.connect(ghostDryGain);
@@ -182,6 +182,7 @@ enableMicBtn.onclick = async () => {
         ringGain.connect(ghostWetGain);
         ghostWetGain.connect(ghostDest);
 
+        // Use this processed stream for sending to peers
         processedLocalStream = ghostDest.stream;
 
         initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
@@ -242,9 +243,14 @@ function triggerBurnSequence() {
         count--; timer.innerText = count;
         if(count <= 0) {
             clearInterval(countdown); clearInterval(beep); osc.stop();
+            
+            // Final Blackout
             document.body.innerHTML = "<div style='width:100vw; height:100vh; background:#000; display:flex; justify-content:center; align-items:center; color:#ff3366; font-family:monospace; font-size: 20px; font-weight: bold;'>CONNECTION LOST.</div>";
+            
+            // Destroy everything
             if(peer) peer.destroy();
             if(localStream) localStream.getTracks().forEach(t => t.stop());
+            
             setTimeout(() => location.reload(), 2000);
         }
     }, 1000);
@@ -343,7 +349,6 @@ const loadVideoBtn = document.getElementById('loadVideoBtn');
 const hostVideoControls = document.getElementById('hostVideoControls');
 const videoWaitingText = document.getElementById('videoWaitingText');
 const syncWarning = document.getElementById('syncWarning');
-const cinemaBtn = document.getElementById('cinemaBtn');
 
 let isVideoBroadcasting = false;
 let ytPlayer = null;
@@ -364,7 +369,6 @@ function parseVideoUrl(url) {
 function loadVideoPlayer(parsedData) {
     videoWrapper.style.display = 'block';
     videoWaitingText.style.display = 'none';
-    cinemaBtn.style.display = 'block';
     currentVideoType = parsedData.type;
     
     syncVideo.pause();
@@ -380,7 +384,7 @@ function loadVideoPlayer(parsedData) {
         } else if(isYtApiReady) {
             ytPlayer = new YT.Player('ytPlayer', {
                 height: '100%', width: '100%', videoId: parsedData.id,
-                playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1, 'fs': 1 },
+                playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1 },
                 events: { 'onStateChange': onYtStateChange }
             });
         }
@@ -458,17 +462,6 @@ function handleRemoteVideoSync(data) {
     setTimeout(() => { isVideoBroadcasting = false; }, 500);
 }
 
-// --- CINEMA MODE ---
-cinemaBtn.onclick = () => {
-    if (!document.fullscreenElement) {
-        if (videoWrapper.requestFullscreen) videoWrapper.requestFullscreen();
-        else if (videoWrapper.webkitRequestFullscreen) videoWrapper.webkitRequestFullscreen();
-        else if (videoWrapper.msRequestFullscreen) videoWrapper.msRequestFullscreen();
-    } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-    }
-};
-
 // --- GLOBAL SYNC UI ---
 function setPeerIcon(peerId, state) {
     const iconSpan = document.getElementById('icon-' + peerId);
@@ -478,7 +471,7 @@ function setPeerIcon(peerId, state) {
     else iconSpan.innerText = '🎙️';
 }
 
-// --- PERSONAL CONTROLS ---
+// --- PERSONAL CONTROLS (Ghost & Mute) ---
 function toggleSelfMute(forcedState = null) {
     isMuted = forcedState !== null ? forcedState : !isMuted;
     localStream.getAudioTracks()[0].enabled = !isMuted; 
@@ -699,7 +692,7 @@ function setupActiveConnection(conn) {
             }
         }
         else if (data.type === 'burn_protocol') {
-            triggerBurnSequence();
+            triggerBurnSequence(); // Self destruct if host says so
         }
     });
 
@@ -725,8 +718,8 @@ createBtn.onclick = async () => {
     if (isNaN(maxLimit) || maxLimit < 2 || maxLimit > 10) maxLimit = 10;
 
     isHost = true;
-    setupHostVideoSync(); 
-    burnBtn.style.display = 'block'; 
+    setupHostVideoSync(); // Unlock host video tools
+    burnBtn.style.display = 'block'; // Unhide the Burn Button for Host
 
     const roomKey = Math.floor(1000 + Math.random() * 9000).toString();
     roomIdDisplay.innerText = roomKey;
