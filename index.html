@@ -21,7 +21,7 @@
         }
         
         /* Expand container for room layout */
-        .container.room-active { max-width: 900px; padding: 20px; }
+        .container.room-active { max-width: 950px; padding: 20px; }
         
         h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
         
@@ -34,7 +34,7 @@
         
         button {
             background: transparent; color: #00ffcc; border: 1px solid #00ffcc; padding: 12px 20px; margin: 10px; border-radius: 6px;
-            cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; width: 85%; box-sizing: border-box;
+            cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; box-sizing: border-box;
         }
         button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc; }
         
@@ -45,10 +45,10 @@
         .status { font-size: 14px; color: #aaa; margin-top: 5px; margin-bottom: 15px; font-weight: bold; }
         .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
 
-        /* --- RESPONSIVE ROOM LAYOUT --- */
-        .room-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; }
-        .left-panel { flex: 1.5; min-width: 300px; display: flex; flex-direction: column; align-items: center; }
-        .right-panel { flex: 1; min-width: 300px; display: flex; flex-direction: column; background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; height: 500px; }
+        /* --- RESPONSIVE ROOM LAYOUT (Original Classic Structure) --- */
+        .room-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; align-items: stretch; }
+        .left-panel { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; align-items: center; }
+        .right-panel { flex: 1.8; min-width: 320px; display: flex; flex-direction: column; background: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; height: 500px; }
 
         /* --- PARTICIPANTS & VISUALIZER --- */
         #participantList {
@@ -75,27 +75,52 @@
         #lobbyArea { width: 100%; margin-top: 15px; display: none; background: #1a1a1d; border: 1px dashed #ffaa00; border-radius: 8px; padding: 10px; box-sizing: border-box; }
         .lobby-title { color: #ffaa00; font-size: 14px; margin: 0 0 10px 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .lobby-req { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
-        .lobby-req:last-child { border-bottom: none; }
         .lobby-btns { display: flex; gap: 5px; }
         .btn-admit { border: 1px solid #00ffcc; color: #00ffcc; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
-        .btn-admit:hover { background: #00ffcc; color: #000; }
         .btn-deny { border: 1px solid #ff3366; color: #ff3366; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
-        .btn-deny:hover { background: #ff3366; color: #fff; }
+
+        /* --- TABS UI FOR RIGHT PANEL --- */
+        .tabs-header { display: flex; border-bottom: 1px solid #333; background: #1a1a1d; }
+        .tab-btn { flex: 1; padding: 12px 5px; margin: 0; border: none; background: transparent; color: #888; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; border-radius: 0; }
+        .tab-btn:hover { color: #fff; background: #222; }
+        .tab-btn.active { color: #00ffcc; border-bottom: 2px solid #00ffcc; background: #111; }
+        
+        .tab-content { display: none; flex-direction: column; flex: 1; padding: 15px; overflow-y: auto; }
+        .tab-content.active { display: flex; }
 
         /* --- SECRET CHAT UI --- */
-        .chat-header { color: #ffaa00; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; text-align: left; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
-        .chat-input-area { display: flex; gap: 10px; margin-top: 10px; }
-        .chat-input-area input { margin: 0; width: 100%; text-align: left; padding: 10px; font-size: 14px; }
+        .chat-input-area { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;}
+        .chat-input-area input { flex: 1; margin: 0; text-align: left; padding: 10px; font-size: 14px; width: auto; }
         .chat-input-area button { margin: 0; width: 80px; padding: 10px; font-size: 14px; }
         
         .chat-msg { background: #222; padding: 10px; border-radius: 6px; font-size: 13px; text-align: left; position: relative; overflow: hidden; animation: fadeIn 0.3s ease; }
         .chat-msg .sender { color: #00ffcc; font-weight: bold; margin-bottom: 3px; font-size: 12px; }
         .chat-msg .text { color: #ddd; word-break: break-word; }
-        /* 30s Disappearing Animation line */
         .chat-msg::after { content: ''; position: absolute; bottom: 0; left: 0; height: 2px; background: #ff3366; width: 100%; animation: drain 30s linear forwards; }
         @keyframes drain { from { width: 100%; } to { width: 0%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PHANTOM DROP (FILE SHARING) UI --- */
+        .file-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px; }
+        .file-card { background: #1a1a1d; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; position: relative; }
+        .file-card .sender { color: #ffaa00; font-size: 12px; font-weight: bold; text-align: left; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .file-preview { margin-bottom: 15px; background: #0f0f11; border-radius: 6px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 100px; }
+        .file-preview img, .file-preview video { max-width: 100%; max-height: 180px; border-radius: 4px; object-fit: contain; }
+        .file-icon { font-size: 40px; color: #555; }
+        .file-details { margin-bottom: 15px; }
+        .file-name { font-size: 13px; color: #fff; word-break: break-all; margin-bottom: 5px; font-weight: bold; }
+        .file-size { font-size: 11px; color: #888; }
+        .btn-download { display: inline-block; background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 8px 20px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.3s; width: 80%; }
+        .btn-download:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
+        .file-upload-section { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* --- WATCH PARTY UI --- */
+        .watch-instructions { font-size: 13px; color: #aaa; margin-bottom: 15px; text-align: left; line-height: 1.4; }
+        #syncVideo { width: 100%; border-radius: 8px; background: #000; outline: none; border: 1px solid #333; margin-top: 10px; display: none; }
+        .host-video-controls { display: flex; gap: 10px; margin-top: 10px; }
+        .host-video-controls input { flex: 1; margin: 0; padding: 10px; font-size: 13px; width: auto; }
+        .host-video-controls button { width: auto; margin: 0; padding: 10px 15px; font-size: 13px; }
 
         /* --- CONTROLS --- */
         .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 10px; }
@@ -137,7 +162,7 @@
     <div class="container" id="initScreen">
         <h2>SECURE GATEWAY</h2>
         <input type="text" id="userNameInput" placeholder="Enter your Name" autocomplete="off">
-        <button id="enableMicBtn">Initialize Communication</button>
+        <button id="enableMicBtn">Initialize Comm</button>
         <p id="errorMsg" style="color: #ff3366; font-size: 13px; display: none; margin-top: 15px; font-weight: bold;"></p>
     </div>
 
@@ -173,12 +198,45 @@
             </div>
 
             <div class="right-panel">
-                <div class="chat-header">Secret Chat (30s) 💬</div>
-                <div class="chat-messages" id="chatMessages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Message..." autocomplete="off">
-                    <button id="sendChatBtn">Send</button>
+                
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat</button>
+                    <button class="tab-btn" onclick="switchTab('files')">📁 Drop</button>
+                    <button class="tab-btn" onclick="switchTab('watch')">🎬 Watch</button>
                 </div>
+
+                <div class="tab-content active" id="tab-chat">
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Message..." autocomplete="off">
+                        <button id="sendChatBtn">Send</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-files">
+                    <div class="file-list" id="fileList">
+                        <div style="color: #555; text-align: center; margin-top: 50px; font-size: 13px;">No files shared yet.</div>
+                    </div>
+                    <div class="file-upload-section">
+                        <input type="file" id="fileInput" style="display: none;">
+                        <button onclick="document.getElementById('fileInput').click()" style="width: 100%; margin: 0; padding: 10px;">Select & Send File</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-watch">
+                    <div class="watch-instructions">
+                        Host can paste a direct video link (MP4/WebM). Play/Pause actions sync automatically for everyone.
+                    </div>
+                    
+                    <div class="host-video-controls" id="hostVideoControls" style="display: none;">
+                        <input type="text" id="videoUrlInput" placeholder="Paste Direct MP4 Link..." autocomplete="off">
+                        <button id="loadVideoBtn">Load</button>
+                    </div>
+                    
+                    <video id="syncVideo" controls playsinline></video>
+                    <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 50px; font-size: 13px;">Waiting for Host to start a video...</div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -188,21 +246,21 @@
     <script>
         let peer;
         let localStream;
-        let audioCtx; // For Visualizer
+        let audioCtx; 
         let myName = ""; 
         let myRoomName = ""; 
         let isMuted = false;
         
         let handRaiseTimer = null;
         let globalMuteStates = {}; 
-        let pendingRequests = {}; // Host Lobby
+        let pendingRequests = {}; 
 
-        const secretPrefix = "phantom-squad-v3-"; 
+        const secretPrefix = "phantom-os-v4-"; 
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
         let calls = {};       
-        let visualizerFrames = {}; // Store requestAnimationFrames to cancel them
+        let visualizerFrames = {}; 
 
         // DOM Elements
         const initScreen = document.getElementById('initScreen');
@@ -231,6 +289,14 @@
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
         const sendChatBtn = document.getElementById('sendChatBtn');
+
+        // --- TAB SWITCH LOGIC ---
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        };
 
         // --- UTILS (Toasts & Modals) ---
         function showToast(message, isWarning = false) {
@@ -270,6 +336,12 @@
             });
         }
 
+        function broadcastData(dataObj) {
+            Object.values(connections).forEach(conn => {
+                if (conn.open) conn.send(dataObj);
+            });
+        }
+
         // --- VISUALIZER LOGIC ---
         function attachVisualizer(stream, canvasId) {
             if (!audioCtx) return;
@@ -277,7 +349,6 @@
             if (!canvas) return;
 
             try {
-                // Handle different browser audio contexts for remote streams
                 const src = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
                 src.connect(analyser);
@@ -296,15 +367,13 @@
                     let x = 0;
                     for (let i = 0; i < bufferLength; i++) {
                         let barHeight = (dataArray[i] / 255) * canvas.height;
-                        if(barHeight < 1) barHeight = 1; // Minimum height
+                        if(barHeight < 1) barHeight = 1; 
                         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
                         x += barWidth + 1;
                     }
                 }
                 draw();
-            } catch (e) {
-                console.log("Visualizer not supported for this stream", e);
-            }
+            } catch (e) { console.log(e); }
         }
 
         function stopVisualizer(canvasId) {
@@ -327,14 +396,13 @@
             
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                // Initialize Audio Context for Visualizer after user gesture
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
                 initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
                 welcomeUserText.innerText = "Logged in as: " + myName; 
             } catch (error) {
                 enableMicBtn.innerText = "Initialize Comm";
-                errorMsg.style.display = 'block'; errorMsg.innerText = "Mic access denied. Please allow to proceed.";
+                errorMsg.style.display = 'block'; errorMsg.innerText = "Mic access denied.";
             }
         };
 
@@ -346,7 +414,6 @@
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Self-Destruct in 30 seconds
             setTimeout(() => {
                 msgDiv.style.opacity = '0';
                 setTimeout(() => msgDiv.remove(), 300);
@@ -357,12 +424,130 @@
             const text = chatInput.value.trim();
             if (!text) return;
             renderChatMessage(myName + " (You)", text);
-            Object.values(connections).forEach(conn => {
-                if (conn.open) conn.send({ type: 'chat', sender: myName, text: text });
-            });
+            broadcastData({ type: 'chat', sender: myName, text: text });
             chatInput.value = '';
         };
         chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatBtn.click(); });
+
+        // --- PHANTOM DROP (FILE SHARING) LOGIC ---
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        function formatBytes(bytes) {
+            if(bytes === 0) return '0 Bytes';
+            const k = 1024; const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function renderFileUI(sender, fileName, fileType, fileSize, fileBlob) {
+            const emptyText = fileList.querySelector('div');
+            if(emptyText && emptyText.innerText.includes('No files')) emptyText.remove();
+
+            const fileUrl = URL.createObjectURL(fileBlob);
+            const card = document.createElement('div');
+            card.className = 'file-card';
+            
+            let previewHTML = `<div class="file-preview"><div class="file-icon">📄</div></div>`;
+            
+            if (fileType.startsWith('image/')) {
+                previewHTML = `<div class="file-preview"><img src="${fileUrl}" alt="Preview"></div>`;
+            } else if (fileType.startsWith('video/')) {
+                previewHTML = `<div class="file-preview"><video src="${fileUrl}" controls></video></div>`;
+            }
+
+            card.innerHTML = `
+                <div class="sender">${sender} shared a file:</div>
+                ${previewHTML}
+                <div class="file-details">
+                    <div class="file-name">${fileName}</div>
+                    <div class="file-size">${formatBytes(fileSize)}</div>
+                </div>
+                <a href="${fileUrl}" download="${fileName}" class="btn-download">⬇ Download</a>
+            `;
+            fileList.appendChild(card);
+            fileList.scrollTop = fileList.scrollHeight;
+        }
+
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Limit warning for free tier ArrayBuffer transfer
+            if(file.size > 15 * 1024 * 1024) {
+                const proceed = await showModal('confirm', "File is larger than 15MB. It might take time to send depending on network. Send anyway?");
+                if(!proceed) return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const arrayBuffer = ev.target.result;
+                broadcastData({ type: 'file', sender: myName, name: file.name, filetype: file.type, size: file.size, data: arrayBuffer });
+                renderFileUI(myName + " (You)", file.name, file.type, file.size, new Blob([arrayBuffer]));
+                showToast("✅ File sent to group");
+            };
+            reader.readAsArrayBuffer(file);
+            fileInput.value = ''; // reset
+        };
+
+        // --- WATCH PARTY LOGIC ---
+        const syncVideo = document.getElementById('syncVideo');
+        const videoUrlInput = document.getElementById('videoUrlInput');
+        const loadVideoBtn = document.getElementById('loadVideoBtn');
+        const hostVideoControls = document.getElementById('hostVideoControls');
+        const videoWaitingText = document.getElementById('videoWaitingText');
+
+        let isVideoBroadcasting = false;
+
+        function setupHostVideoSync() {
+            hostVideoControls.style.display = 'flex';
+            
+            loadVideoBtn.onclick = () => {
+                const url = videoUrlInput.value.trim();
+                if(!url) return;
+                syncVideo.src = url;
+                syncVideo.style.display = 'block';
+                videoWaitingText.style.display = 'none';
+                broadcastData({ type: 'vid_load', url: url });
+                showToast("🎬 Video loaded for all members");
+            };
+
+            // Capture Host Events
+            syncVideo.onplay = () => {
+                if(!isVideoBroadcasting) broadcastData({ type: 'vid_play', time: syncVideo.currentTime });
+            };
+            syncVideo.onpause = () => {
+                if(!isVideoBroadcasting) broadcastData({ type: 'vid_pause', time: syncVideo.currentTime });
+            };
+            syncVideo.onseeked = () => {
+                if(!isVideoBroadcasting) broadcastData({ type: 'vid_seek', time: syncVideo.currentTime });
+            };
+        }
+
+        function handleRemoteVideoSync(data) {
+            isVideoBroadcasting = true; // Block loop
+            
+            if (data.type === 'vid_load') {
+                syncVideo.src = data.url;
+                syncVideo.style.display = 'block';
+                videoWaitingText.style.display = 'none';
+                syncVideo.removeAttribute('controls'); // Joiners can't control
+                showToast("🎬 Host started a video");
+            }
+            else if (data.type === 'vid_play') {
+                syncVideo.currentTime = data.time;
+                syncVideo.play().catch(e => console.log("Auto-play restricted by browser"));
+            }
+            else if (data.type === 'vid_pause') {
+                syncVideo.currentTime = data.time;
+                syncVideo.pause();
+            }
+            else if (data.type === 'vid_seek') {
+                syncVideo.currentTime = data.time;
+            }
+
+            setTimeout(() => { isVideoBroadcasting = false; }, 100);
+        }
 
         // --- GLOBAL SYNC UI ---
         function setPeerIcon(peerId, state) {
@@ -385,9 +570,7 @@
             setPeerIcon('me', isMuted ? 'muted' : 'unmuted');
             globalMuteStates['me'] = isMuted;
 
-            Object.values(connections).forEach(conn => {
-                if(conn.open) conn.send({ type: 'sync_mute', state: isMuted });
-            });
+            broadcastData({ type: 'sync_mute', state: isMuted });
         }
         muteBtn.onclick = () => toggleSelfMute();
 
@@ -397,9 +580,7 @@
             clearTimeout(handRaiseTimer);
             handRaiseTimer = setTimeout(() => { setPeerIcon('me', globalMuteStates['me'] ? 'muted' : 'unmuted'); }, 5000);
 
-            Object.values(connections).forEach(conn => {
-                if(conn.open) conn.send({ type: 'raise_hand', name: myName });
-            });
+            broadcastData({ type: 'raise_hand', name: myName });
         };
 
         // --- UI & HOST FUNCTIONS ---
@@ -457,7 +638,6 @@
             }
             participantList.appendChild(div);
 
-            // Attach visualizer
             if(stream) {
                 setTimeout(() => attachVisualizer(stream, canvasId), 500);
             }
@@ -479,7 +659,6 @@
             audio.id = 'audio-' + peerId; audio.srcObject = stream; audio.autoplay = true;
             audioContainer.appendChild(audio);
             
-            // Re-attach visualizer once stream arrives
             if(document.getElementById('vis-' + peerId)){
                 attachVisualizer(stream, 'vis-' + peerId);
             }
@@ -554,14 +733,26 @@
             
             conn.on('data', async (data) => {
                 if (data.type === 'name_broadcast') {
-                    // Try to attach visualizer if audio already exists
                     let stream = null;
                     const audioEl = document.getElementById('audio-' + conn.peer);
                     if(audioEl && audioEl.srcObject) stream = audioEl.srcObject;
                     addParticipantUI(conn.peer, data.name, data.isMuted, stream);
+
+                    // Sync video if running
+                    if(isHost && syncVideo.src && !syncVideo.src.endsWith(window.location.host + '/')) {
+                        conn.send({ type: 'vid_load', url: syncVideo.src });
+                        conn.send({ type: syncVideo.paused ? 'vid_pause' : 'vid_play', time: syncVideo.currentTime });
+                    }
                 }
                 else if (data.type === 'chat') {
                     renderChatMessage(data.sender, data.text);
+                }
+                else if (data.type === 'file') {
+                    // Receive File
+                    renderFileUI(data.sender, data.name, data.filetype, data.size, new Blob([data.data]));
+                }
+                else if (data.type.startsWith('vid_')) {
+                    handleRemoteVideoSync(data);
                 }
                 else if (data.type === 'hangup') { removePeer(conn.peer); }
                 else if (data.type === 'kicked') {
@@ -577,10 +768,10 @@
                 }
                 else if (data.type === 'host_control') {
                     if (data.action === 'mute') {
-                        toggleSelfMute(true); // Force Mute
+                        toggleSelfMute(true); 
                         showToast("⚠️ You were muted by Host", true);
                     } else if (data.action === 'unmute') {
-                        toggleSelfMute(false); // Force Unmute
+                        toggleSelfMute(false); 
                         showToast("✅ Host unmuted you");
                     }
                 }
@@ -622,6 +813,8 @@
             if (isNaN(maxLimit) || maxLimit < 2 || maxLimit > 10) maxLimit = 10;
 
             isHost = true;
+            setupHostVideoSync(); // Unlock host video tools
+
             const roomKey = Math.floor(1000 + Math.random() * 9000).toString();
             roomIdDisplay.innerText = roomKey;
             roomNameDisplay.innerText = "ROOM: " + myRoomName;
@@ -641,7 +834,6 @@
                         conn.send({ type: 'room_details', hostName: myName, roomName: myRoomName });
                     }
                     else if (data.type === 'request_access') {
-                        // Put in Lobby
                         pendingRequests[conn.peer] = { name: data.joinerName, conn: conn };
                         renderLobby();
                         showToast(`⏳ ${data.joinerName} is waiting in the Lobby.`);
