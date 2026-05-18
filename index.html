@@ -10,19 +10,19 @@
             background-color: #0f0f11; color: #e0e0e0;
             font-family: 'Courier New', Courier, monospace;
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; margin: 0; flex-direction: column; padding: 20px; box-sizing: border-box;
+            min-height: 100vh; margin: 0; flex-direction: column; padding: 15px; box-sizing: border-box;
         }
         .container {
-            background: #1a1a1d; padding: 30px; border-radius: 12px;
+            background: #1a1a1d; padding: 25px; border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 255, 204, 0.1); text-align: center;
-            width: 100%; max-width: 380px; border: 1px solid #333; position: relative;
+            width: 100%; max-width: 400px; border: 1px solid #333; position: relative;
         }
         h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
         
         input {
             background: #111; color: #00ffcc; border: 1px solid #333;
             padding: 12px; margin: 10px 0 20px 0; border-radius: 6px;
-            width: 80%; font-family: inherit; text-align: center;
+            width: 85%; font-family: inherit; text-align: center;
             font-size: 16px; outline: none; transition: all 0.3s ease;
         }
         input:focus { border-color: #00ffcc; box-shadow: 0 0 8px rgba(0, 255, 204, 0.3); }
@@ -32,7 +32,7 @@
             background: transparent; color: #00ffcc; border: 1px solid #00ffcc;
             padding: 12px 20px; margin: 10px; border-radius: 6px;
             cursor: pointer; font-size: 16px; font-weight: bold;
-            transition: all 0.3s ease; width: 80%;
+            transition: all 0.3s ease; width: 85%;
         }
         button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc; }
         
@@ -43,37 +43,42 @@
         .status { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 20px; font-weight: bold; }
         .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Participant List & Host Action Buttons */
+        /* Participant List & Dynamic Icons */
         #participantList {
-            width: 90%; background: #111; border: 1px solid #333;
+            width: 95%; background: #111; border: 1px solid #333;
             border-radius: 8px; padding: 10px; margin-top: 10px;
-            max-height: 180px; overflow-y: auto; text-align: left;
+            max-height: 200px; overflow-y: auto; text-align: left;
         }
         .participant-item {
             color: #00ffcc; font-size: 14px; padding: 10px;
             border-bottom: 1px solid #222; font-weight: bold;
             display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px; /* Fixed for mobile view */
         }
         .participant-item:last-child { border-bottom: none; }
         
-        .host-action-group { display: flex; gap: 5px; }
+        .participant-info { display: flex; align-items: center; gap: 8px; }
+        .status-icon { font-size: 16px; width: 20px; text-align: center; display: inline-block; }
+        
+        /* Host Action Buttons */
+        .host-action-group { display: flex; gap: 5px; flex-wrap: wrap; }
         .host-action-btn {
-            background: transparent; border: 1px solid; padding: 4px 8px; font-size: 12px; 
-            margin: 0; width: auto; border-radius: 4px; cursor: pointer;
+            background: transparent; border: 1px solid; padding: 6px 10px; font-size: 12px; 
+            margin: 0; border-radius: 4px; cursor: pointer; flex-grow: 1;
         }
         .btn-mute-remote { border-color: #ffaa00; color: #ffaa00; }
         .btn-mute-remote:hover { background: #ffaa00; color: #000; box-shadow: 0 0 5px #ffaa00; }
         .btn-kick-remote { border-color: #ff3366; color: #ff3366; }
         .btn-kick-remote:hover { background: #ff3366; color: #fff; box-shadow: 0 0 5px #ff3366; }
         
-        /* Personal Controls Row (Mute & Raise Hand) */
-        .controls-row { display: flex; justify-content: space-between; width: 90%; margin-top: 15px; }
+        /* Personal Controls */
+        .controls-row { display: flex; justify-content: space-between; width: 95%; margin-top: 15px; }
         .control-btn { width: 48%; margin: 0; padding: 10px; font-size: 14px; }
         .btn-raise { border-color: #ffaa00; color: #ffaa00; }
         .btn-raise:hover { background: #ffaa00; color: #000; }
 
-        /* Notification Requests */
-        #notificationArea { width: 90%; margin-top: 15px; }
+        /* Request Notifications */
+        #notificationArea { width: 95%; margin-top: 15px; }
         .join-request {
             background: #222; border: 1px solid #444; padding: 15px;
             border-radius: 8px; margin-bottom: 10px; font-size: 14px;
@@ -83,7 +88,7 @@
         .btn-approve { width: 45%; border-color: #00ffcc; color: #00ffcc; padding: 8px; margin:0;}
         .btn-decline { width: 45%; border-color: #ff3366; color: #ff3366; padding: 8px; margin:0;}
 
-        /* Custom Modal UI */
+        /* Modals & Toasts */
         #customModalOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); display: none;
@@ -98,7 +103,6 @@
         .modal-btn-group { display: flex; justify-content: space-around; }
         .modal-btn { width: 40%; padding: 10px; font-size: 14px; margin: 0; }
 
-        /* Floating Toast Notification System */
         #toastContainer {
             position: fixed; top: 20px; right: 20px; z-index: 2000;
             display: flex; flex-direction: column; gap: 10px; pointer-events: none;
@@ -160,7 +164,7 @@
             <button class="control-btn btn-raise" id="raiseHandBtn">Raise Hand ✋</button>
         </div>
 
-        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 90%;">End & Leave</button>
+        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 95%;">End & Leave</button>
     </div>
 
     <div id="audioContainer"></div>
@@ -171,14 +175,16 @@
         let myName = ""; 
         let myRoomName = ""; 
         let isMuted = false;
-        const secretPrefix = "phantom-squad-"; 
         
+        let handRaiseTimer = null;
+        let globalMuteStates = {}; // Sabke mute status ka record
+
+        const secretPrefix = "phantom-squad-"; 
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
         let calls = {};       
 
-        // DOM Elements
         const initScreen = document.getElementById('initScreen');
         const enableMicBtn = document.getElementById('enableMicBtn');
         const userNameInput = document.getElementById('userNameInput');
@@ -200,17 +206,15 @@
         const audioContainer = document.getElementById('audioContainer');
         const toastContainer = document.getElementById('toastContainer');
 
-        // --- TOAST NOTIFICATION SYSTEM ---
         function showToast(message, isWarning = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerText = message;
             if (isWarning) toast.style.borderLeftColor = '#ff3366';
             toastContainer.appendChild(toast);
-            setTimeout(() => { if (toast) toast.remove(); }, 4000); // Remove after animation
+            setTimeout(() => { if (toast) toast.remove(); }, 4000);
         }
 
-        // --- CUSTOM MODAL SYSTEM ---
         function showModal(type, text, placeholder = "") {
             return new Promise((resolve) => {
                 const overlay = document.getElementById('customModalOverlay');
@@ -241,7 +245,6 @@
             });
         }
 
-        // --- AUTHENTICATION ---
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
             if (enteredName === "") {
@@ -262,7 +265,21 @@
             }
         };
 
-        // --- PERSONAL CONTROLS (Self Mute & Raise Hand) ---
+        // --- GLOBAL SYNC UI UPDATER ---
+        function setPeerIcon(peerId, state) {
+            const iconSpan = document.getElementById('icon-' + peerId);
+            if (!iconSpan) return;
+            
+            if (state === 'hand') {
+                iconSpan.innerText = '✋';
+            } else if (state === 'muted') {
+                iconSpan.innerText = '🔇';
+            } else {
+                iconSpan.innerText = '🎙️';
+            }
+        }
+
+        // --- PERSONAL CONTROLS ---
         function toggleSelfMute(forcedState = null) {
             isMuted = forcedState !== null ? forcedState : !isMuted;
             localStream.getAudioTracks()[0].enabled = !isMuted;
@@ -271,7 +288,11 @@
             muteBtn.style.color = isMuted ? "#ff3366" : "#00ffcc";
             muteBtn.style.borderColor = isMuted ? "#ff3366" : "#00ffcc";
 
-            // Sync state with Host so Host's button updates
+            // Update my own UI instantly
+            setPeerIcon('me', isMuted ? 'muted' : 'unmuted');
+            globalMuteStates['me'] = isMuted;
+
+            // Broadcast state to everyone
             Object.values(connections).forEach(conn => {
                 if(conn.open) conn.send({ type: 'sync_mute', state: isMuted });
             });
@@ -280,26 +301,48 @@
 
         raiseHandBtn.onclick = () => {
             showToast("✋ You raised your hand");
+            setPeerIcon('me', 'hand');
+            
+            // Revert back to mute status after 5s
+            clearTimeout(handRaiseTimer);
+            handRaiseTimer = setTimeout(() => {
+                setPeerIcon('me', globalMuteStates['me'] ? 'muted' : 'unmuted');
+            }, 5000);
+
             Object.values(connections).forEach(conn => {
                 if(conn.open) conn.send({ type: 'raise_hand', name: myName });
             });
         };
 
         // --- UI & HOST FUNCTIONS ---
-        function addParticipantUI(peerId, name) {
+        function addParticipantUI(peerId, name, isCurrentlyMuted = false) {
             if (document.getElementById('ui-' + peerId)) return;
             const emptyText = participantList.querySelector('div');
             if(emptyText && emptyText.innerText.includes('Waiting')) emptyText.remove();
+
+            globalMuteStates[peerId] = isCurrentlyMuted;
 
             const div = document.createElement('div');
             div.id = 'ui-' + peerId;
             div.className = 'participant-item';
             
+            // Name Info Section
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'participant-info';
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.id = 'icon-' + peerId;
+            iconSpan.className = 'status-icon';
+            iconSpan.innerText = isCurrentlyMuted ? '🔇' : '🎙️';
+            
             const nameSpan = document.createElement('span');
-            nameSpan.innerText = "🎙️ " + name + (peerId === 'me' ? " (You)" : "");
-            div.appendChild(nameSpan);
+            nameSpan.innerText = name + (peerId === 'me' ? " (You)" : "");
+            
+            infoDiv.appendChild(iconSpan);
+            infoDiv.appendChild(nameSpan);
+            div.appendChild(infoDiv);
 
-            // Add Actions for Host
+            // Add Actions for Host (Mobile Friendly Flex Wrap)
             if (isHost && peerId !== 'me') {
                 const actionGroup = document.createElement('div');
                 actionGroup.className = 'host-action-group';
@@ -307,7 +350,8 @@
                 const hMuteBtn = document.createElement('button');
                 hMuteBtn.className = 'host-action-btn btn-mute-remote';
                 hMuteBtn.id = 'host-mute-' + peerId;
-                hMuteBtn.innerText = 'Mute';
+                hMuteBtn.innerText = isCurrentlyMuted ? 'Unmute' : 'Mute';
+                hMuteBtn.style.color = isCurrentlyMuted ? '#ff3366' : '#ffaa00';
                 hMuteBtn.onclick = () => hostToggleMute(peerId, hMuteBtn);
                 
                 const kickBtn = document.createElement('button');
@@ -325,6 +369,7 @@
         function removeParticipantUI(peerId) {
             const div = document.getElementById('ui-' + peerId);
             if (div) div.remove();
+            delete globalMuteStates[peerId];
             if (participantList.children.length === 0) {
                 participantList.innerHTML = '<div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>';
             }
@@ -345,15 +390,13 @@
             if (audio) audio.remove();
         }
 
-        // Host controls
         function hostToggleMute(peerId, btn) {
             const isCurrentlyMuted = btn.innerText === 'Unmute';
             const action = isCurrentlyMuted ? 'unmute' : 'mute';
             if (connections[peerId]) {
                 connections[peerId].send({ type: 'host_control', action: action });
-                btn.innerText = isCurrentlyMuted ? 'Mute' : 'Unmute';
-                btn.style.color = isCurrentlyMuted ? '#ffaa00' : '#ff3366';
-                btn.style.borderColor = isCurrentlyMuted ? '#ffaa00' : '#ff3366';
+                // We don't change button UI here directly anymore.
+                // It will change when we receive the 'sync_mute' from the user confirming they muted.
             }
         }
 
@@ -370,7 +413,8 @@
             
             conn.on('data', async (data) => {
                 if (data.type === 'name_broadcast') {
-                    addParticipantUI(conn.peer, data.name);
+                    // Include their current mute state when they join
+                    addParticipantUI(conn.peer, data.name, data.isMuted);
                 }
                 else if (data.type === 'hangup') { removePeer(conn.peer); }
                 else if (data.type === 'kicked') {
@@ -378,31 +422,40 @@
                     location.reload();
                 }
                 else if (data.type === 'raise_hand') {
-                    showToast(`✋ ${data.name} raised their hand!`);
+                    showToast(`✋ ${data.name} raised hand!`);
+                    setPeerIcon(conn.peer, 'hand');
+                    setTimeout(() => {
+                        setPeerIcon(conn.peer, globalMuteStates[conn.peer] ? 'muted' : 'unmuted');
+                    }, 5000);
                 }
                 else if (data.type === 'host_control') {
                     if (data.action === 'mute') {
-                        toggleSelfMute(true); // Force Mute
+                        toggleSelfMute(true); 
                         showToast("⚠️ You were muted by Host", true);
                     } else if (data.action === 'unmute') {
-                        toggleSelfMute(false); // Force Unmute
+                        toggleSelfMute(false); 
                         showToast("✅ Host unmuted you");
                     }
                 }
-                else if (data.type === 'sync_mute' && isHost) {
-                    // Update Host's button if user muted themselves
-                    const hBtn = document.getElementById('host-mute-' + conn.peer);
-                    if (hBtn) {
-                        hBtn.innerText = data.state ? 'Unmute' : 'Mute';
-                        hBtn.style.color = data.state ? '#ff3366' : '#ffaa00';
-                        hBtn.style.borderColor = data.state ? '#ff3366' : '#ffaa00';
+                else if (data.type === 'sync_mute') {
+                    globalMuteStates[conn.peer] = data.state;
+                    setPeerIcon(conn.peer, data.state ? 'muted' : 'unmuted');
+                    
+                    if (isHost) {
+                        const hBtn = document.getElementById('host-mute-' + conn.peer);
+                        if (hBtn) {
+                            hBtn.innerText = data.state ? 'Unmute' : 'Mute';
+                            hBtn.style.color = data.state ? '#ff3366' : '#ffaa00';
+                            hBtn.style.borderColor = data.state ? '#ff3366' : '#ffaa00';
+                        }
                     }
                 }
             });
 
             conn.on('close', () => removePeer(conn.peer));
-
-            setTimeout(() => { if (conn.open) conn.send({ type: 'name_broadcast', name: myName }); }, 1000);
+            setTimeout(() => { 
+                if (conn.open) conn.send({ type: 'name_broadcast', name: myName, isMuted: isMuted }); 
+            }, 1000);
         }
 
         function setupActiveCall(call) {
@@ -433,7 +486,7 @@
                 mainMenu.style.display = 'none';
                 roomArea.style.display = 'flex';
                 statusText.innerText = "Host Ready. Waiting for requests...";
-                addParticipantUI('me', myName); 
+                addParticipantUI('me', myName, isMuted); 
             });
 
             peer.on('connection', (conn) => {
@@ -462,7 +515,7 @@
                         reqDiv.querySelector('.btn-approve').onclick = () => {
                             conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
                             setupActiveConnection(conn);
-                            addParticipantUI(conn.peer, data.joinerName);
+                            // Joiner UI will be added when they broadcast their name
                             reqDiv.remove();
                         };
                         
@@ -511,14 +564,13 @@
                         }
                         else if (data.type === 'decision') {
                             if (data.status === 'approved') {
-                                // Bug Fix: Change the hanging waiting text instantly
                                 statusText.innerText = "Connection Active 🟢";
                                 statusText.style.color = "#00ffcc";
 
                                 await showModal('alert', "Access Granted ✅ You are in the room.");
                                 
                                 setupActiveConnection(handshakeConn);
-                                addParticipantUI('me', myName); 
+                                addParticipantUI('me', myName, isMuted); 
                                 
                                 data.peers.forEach(peerId => {
                                     if(!connections[peerId]) {
