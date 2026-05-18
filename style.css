@@ -101,14 +101,9 @@ canvas.visualizer { width: 40px; height: 15px; background: transparent; border-r
 .host-video-controls { display: flex; gap: 10px; margin-bottom: 15px; }
 .host-video-controls input { flex: 1; margin: 0; padding: 10px; font-size: 13px; width: auto; }
 .host-video-controls button { width: auto; margin: 0; padding: 10px 15px; font-size: 13px; }
-
 .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; border: 1px solid #333; display: none; }
 .video-wrapper video, .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 #syncWarning { color: #ffaa00; font-size: 11px; margin-top: 10px; display: none; text-align: left; }
-
-/* Cinema Mode Button */
-.btn-cinema { background: #111; color: #fff; border: 1px solid #00ffcc; padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; display: none; transition: 0.3s; }
-.btn-cinema:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
 
 /* --- CONTROLS & UTILS --- */
 .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 8px; }
