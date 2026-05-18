@@ -109,20 +109,22 @@
         .host-video-controls { display: flex; gap: 10px; margin-bottom: 15px; }
         .host-video-controls input { flex: 1; margin: 0; padding: 10px; font-size: 13px; width: auto; }
         .host-video-controls button { width: auto; margin: 0; padding: 10px 15px; font-size: 13px; }
-        
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; border: 1px solid #333; display: none; }
         .video-wrapper video, .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         #syncWarning { color: #ffaa00; font-size: 11px; margin-top: 10px; display: none; text-align: left; }
-        
-        /* Cinema Mode Button */
-        .btn-cinema { background: #111; color: #fff; border: 1px solid #00ffcc; padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; display: none; transition: 0.3s; }
-        .btn-cinema:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
 
         /* --- CONTROLS & UTILS --- */
-        .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 10px; }
-        .control-btn { width: 100%; margin: 0; padding: 12px; font-size: 14px; }
+        .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 8px; }
+        .control-btn { flex: 1; margin: 0; padding: 12px 5px; font-size: 13px; border-radius: 6px; }
+        
         .btn-raise { border-color: #ffaa00; color: #ffaa00; }
         .btn-raise:hover { background: #ffaa00; color: #000; }
+        
+        .btn-ghost { border-color: #9d4edd; color: #9d4edd; }
+        .btn-ghost:hover { background: #9d4edd; color: #000; box-shadow: 0 0 10px #9d4edd; }
+
+        .btn-burn { border-color: #ff003c !important; color: #ff003c !important; display: none; width: 100%; margin-top: 15px; font-weight: 900; letter-spacing: 2px; }
+        .btn-burn:hover { background: #ff003c !important; color: #fff !important; box-shadow: 0 0 15px #ff003c; }
 
         #customModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
         .custom-modal { background: #1a1a1d; padding: 25px; border-radius: 12px; border: 1px solid #00ffcc; text-align: center; width: 300px; }
@@ -187,13 +189,16 @@
 
                 <div class="controls-row">
                     <button class="control-btn" id="muteBtn">Mute 🎙️</button>
-                    <button class="control-btn btn-raise" id="raiseHandBtn">Raise Hand ✋</button>
+                    <button class="control-btn btn-ghost" id="ghostBtn">Ghost 🎭</button>
+                    <button class="control-btn btn-raise" id="raiseHandBtn">Hand ✋</button>
                 </div>
-                <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 100%;">End & Leave</button>
+                
+                <button id="endBtn" style="border-color: #888; color: #888; margin-top: 15px; width: 100%;">Leave Room</button>
+                
+                <button id="burnBtn" class="btn-burn">☢️ BURN ROOM</button>
             </div>
 
             <div class="right-panel">
-                
                 <div class="tabs-header">
                     <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat</button>
                     <button class="tab-btn" onclick="switchTab('files')">📁 Drop</button>
@@ -220,14 +225,12 @@
 
                 <div class="tab-content" id="tab-watch">
                     <div class="watch-instructions">
-                        <b>Universal Engine:</b> Paste ANY link. Ad-blockers recommended for seamless syncing.
+                        <b>Universal Engine:</b> Paste ANY link. YouTube and MP4s will fully sync. Ad-blockers recommended.
                     </div>
-                    
                     <div class="host-video-controls" id="hostVideoControls" style="display: none;">
                         <input type="text" id="videoUrlInput" placeholder="Paste ANY link..." autocomplete="off">
                         <button id="loadVideoBtn">Load</button>
                     </div>
-                    
                     <div class="video-wrapper" id="videoWrapper">
                         <video id="syncVideo" playsinline style="display:none;"></video>
                         <div id="ytPlayerContainer" style="display:none; width:100%; height:100%;">
@@ -235,14 +238,9 @@
                         </div>
                         <iframe id="genericIframe" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation" style="display:none;"></iframe>
                     </div>
-                    
-                    <button id="cinemaBtn" class="btn-cinema">Enter Cinema Mode 🔲</button>
-                    
-                    <p id="syncWarning">⚠️ Note: Generic website detected. Video syncing by Host is disabled for this link due to web security. Everyone can watch independently.</p>
-                    
+                    <p id="syncWarning">⚠️ Note: Generic website detected. Video syncing by Host is disabled for this link.</p>
                     <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 30px; font-size: 13px;">Waiting for Host to start media...</div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -255,6 +253,12 @@
         let peer;
         let localStream;
         let audioCtx; 
+        
+        // Audio processing variables
+        let processedLocalStream;
+        let ghostDryGain, ghostWetGain;
+        let isGhostMode = false;
+
         let myName = ""; 
         let myRoomName = ""; 
         let isMuted = false;
@@ -263,7 +267,7 @@
         let globalMuteStates = {}; 
         let pendingRequests = {}; 
 
-        const secretPrefix = "phantom-os-v5-"; 
+        const secretPrefix = "phantom-os-v6-"; 
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
@@ -289,11 +293,13 @@
         const lobbyList = document.getElementById('lobbyList');
         
         const muteBtn = document.getElementById('muteBtn');
+        const ghostBtn = document.getElementById('ghostBtn');
         const raiseHandBtn = document.getElementById('raiseHandBtn');
         const endBtn = document.getElementById('endBtn');
+        const burnBtn = document.getElementById('burnBtn');
+        
         const audioContainer = document.getElementById('audioContainer');
         const toastContainer = document.getElementById('toastContainer');
-        
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
         const sendChatBtn = document.getElementById('sendChatBtn');
@@ -388,7 +394,7 @@
             }
         }
 
-        // --- AUTHENTICATION ---
+        // --- AUTHENTICATION & GHOST ENGINE SETUP ---
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
             if (enteredName === "") {
@@ -402,11 +408,111 @@
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // 🎭 SETUP GHOST VOICE PROCESSOR
+                const micSource = audioCtx.createMediaStreamSource(localStream);
+                const ghostDest = audioCtx.createMediaStreamDestination();
+                
+                ghostDryGain = audioCtx.createGain();
+                ghostWetGain = audioCtx.createGain();
+                ghostDryGain.gain.value = 1; // Start Normal
+                ghostWetGain.gain.value = 0;
+
+                // Ring Modulation for Robotic Effect
+                const ringGain = audioCtx.createGain();
+                ringGain.gain.value = 0; 
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sawtooth';
+                osc.frequency.value = 60; // Deep hacker buzz
+                osc.start();
+
+                micSource.connect(ghostDryGain);
+                ghostDryGain.connect(ghostDest);
+
+                micSource.connect(ringGain);
+                osc.connect(ringGain.gain);
+                ringGain.connect(ghostWetGain);
+                ghostWetGain.connect(ghostDest);
+
+                // Use this processed stream for sending to peers
+                processedLocalStream = ghostDest.stream;
+
                 initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
                 welcomeUserText.innerText = "Logged in as: " + myName; 
             } catch (error) {
                 enableMicBtn.innerText = "Initialize Comm";
                 errorMsg.style.display = 'block'; errorMsg.innerText = "Mic access denied.";
+            }
+        };
+
+        // --- THE BURN PROTOCOL LOGIC ---
+        function triggerBurnSequence() {
+            if (syncHeartbeat) clearInterval(syncHeartbeat);
+
+            // Synth Alarm
+            const actx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'square';
+            osc.connect(gain);
+            gain.connect(actx.destination);
+            osc.start();
+
+            let isHigh = false;
+            const beep = setInterval(() => {
+                osc.frequency.value = isHigh ? 500 : 800;
+                isHigh = !isHigh;
+            }, 150);
+
+            // Red Overlay Flash
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed'; overlay.style.top = '0'; overlay.style.left = '0';
+            overlay.style.width = '100vw'; overlay.style.height = '100vh';
+            overlay.style.backgroundColor = 'rgba(255, 0, 0, 0.4)'; overlay.style.zIndex = '99999';
+            overlay.style.display = 'flex'; overlay.style.flexDirection = 'column';
+            overlay.style.justifyContent = 'center'; overlay.style.alignItems = 'center';
+            overlay.style.color = '#fff'; overlay.style.fontFamily = 'Courier New, monospace';
+            overlay.style.animation = 'burnFlash 0.1s infinite alternate';
+            
+            const style = document.createElement('style');
+            style.innerHTML = `@keyframes burnFlash { from { background-color: rgba(255, 0, 0, 0.3); transform: translate(-3px, 3px); } to { background-color: rgba(255, 0, 0, 0.8); transform: translate(3px, -3px); } }`;
+            document.head.appendChild(style);
+
+            const title = document.createElement('h1');
+            title.innerText = "☢️ BURN PROTOCOL INITIATED ☢️";
+            title.style.fontSize = "26px"; title.style.textAlign = "center";
+            
+            const timer = document.createElement('h2');
+            timer.style.fontSize = "80px";
+            
+            overlay.appendChild(title); overlay.appendChild(timer);
+            document.body.appendChild(overlay);
+
+            let count = 3;
+            timer.innerText = count;
+            
+            const countdown = setInterval(() => {
+                count--; timer.innerText = count;
+                if(count <= 0) {
+                    clearInterval(countdown); clearInterval(beep); osc.stop();
+                    
+                    // Final Blackout
+                    document.body.innerHTML = "<div style='width:100vw; height:100vh; background:#000; display:flex; justify-content:center; align-items:center; color:#ff3366; font-family:monospace; font-size: 20px; font-weight: bold;'>CONNECTION LOST.</div>";
+                    
+                    // Destroy everything
+                    if(peer) peer.destroy();
+                    if(localStream) localStream.getTracks().forEach(t => t.stop());
+                    
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }, 1000);
+        }
+
+        burnBtn.onclick = async () => {
+            const confirmBurn = await showModal('confirm', "WARNING: Initiate Self-Destruct? This will permanently erase the room for everyone.");
+            if(confirmBurn) {
+                broadcastData({ type: 'burn_protocol' });
+                triggerBurnSequence();
             }
         };
 
@@ -495,7 +601,6 @@
         const hostVideoControls = document.getElementById('hostVideoControls');
         const videoWaitingText = document.getElementById('videoWaitingText');
         const syncWarning = document.getElementById('syncWarning');
-        const cinemaBtn = document.getElementById('cinemaBtn');
 
         let isVideoBroadcasting = false;
         let ytPlayer = null;
@@ -503,29 +608,19 @@
         let currentVideoType = 'none';
         let syncHeartbeat = null;
 
-        window.onYouTubeIframeAPIReady = function() {
-            isYtApiReady = true;
-        };
+        window.onYouTubeIframeAPIReady = function() { isYtApiReady = true; };
 
         function parseVideoUrl(url) {
             const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
             const ytMatch = url.match(ytRegex);
-            
-            if (ytMatch && ytMatch[1]) {
-                return { type: 'youtube', id: ytMatch[1], url: url };
-            } 
-            else if (url.match(/\.(mp4|webm|ogg)$/i)) {
-                return { type: 'html5', src: url };
-            }
-            else {
-                return { type: 'generic', src: url };
-            }
+            if (ytMatch && ytMatch[1]) return { type: 'youtube', id: ytMatch[1], url: url };
+            else if (url.match(/\.(mp4|webm|ogg)$/i)) return { type: 'html5', src: url };
+            else return { type: 'generic', src: url };
         }
 
         function loadVideoPlayer(parsedData) {
             videoWrapper.style.display = 'block';
             videoWaitingText.style.display = 'none';
-            cinemaBtn.style.display = 'block'; // Show Cinema Button
             currentVideoType = parsedData.type;
             
             syncVideo.pause();
@@ -541,8 +636,7 @@
                 } else if(isYtApiReady) {
                     ytPlayer = new YT.Player('ytPlayer', {
                         height: '100%', width: '100%', videoId: parsedData.id,
-                        // 'fs': 1 enables native fullscreen if available
-                        playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1, 'fs': 1 },
+                        playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1 },
                         events: { 'onStateChange': onYtStateChange }
                     });
                 }
@@ -562,47 +656,32 @@
 
         function onYtStateChange(event) {
             if(!isHost || isVideoBroadcasting) return;
-            if (event.data == YT.PlayerState.PLAYING) {
-                broadcastData({ type: 'vid_play', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-            } else if (event.data == YT.PlayerState.PAUSED) {
-                broadcastData({ type: 'vid_pause', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-            }
+            if (event.data == YT.PlayerState.PLAYING) broadcastData({ type: 'vid_play', time: ytPlayer.getCurrentTime(), source: 'youtube' });
+            else if (event.data == YT.PlayerState.PAUSED) broadcastData({ type: 'vid_pause', time: ytPlayer.getCurrentTime(), source: 'youtube' });
         }
 
         function setupHostVideoSync() {
             hostVideoControls.style.display = 'flex';
-            
             loadVideoBtn.onclick = () => {
                 const url = videoUrlInput.value.trim();
                 if(!url) return;
-                
                 const parsed = parseVideoUrl(url);
                 loadVideoPlayer(parsed);
-                
                 broadcastData({ type: 'vid_load', parsed: parsed });
                 showToast("🎬 Media Loaded for everyone");
             };
 
-            syncVideo.onplay = () => {
-                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_play', time: syncVideo.currentTime, source: 'html5' });
-            };
-            syncVideo.onpause = () => {
-                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_pause', time: syncVideo.currentTime, source: 'html5' });
-            };
-            syncVideo.onseeked = () => {
-                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_seek', time: syncVideo.currentTime, source: 'html5' });
-            };
+            syncVideo.onplay = () => { if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_play', time: syncVideo.currentTime, source: 'html5' }); };
+            syncVideo.onpause = () => { if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_pause', time: syncVideo.currentTime, source: 'html5' }); };
+            syncVideo.onseeked = () => { if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_seek', time: syncVideo.currentTime, source: 'html5' }); };
 
             if (syncHeartbeat) clearInterval(syncHeartbeat);
             syncHeartbeat = setInterval(() => {
                 if (isHost && isVideoBroadcasting === false && currentVideoType !== 'none') {
                     if (currentVideoType === 'youtube' && ytPlayer && ytPlayer.getPlayerState) {
                         let state = ytPlayer.getPlayerState();
-                        if (state == YT.PlayerState.PLAYING) {
-                            broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'playing' });
-                        } else if (state == YT.PlayerState.PAUSED) {
-                            broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'paused' });
-                        }
+                        if (state == YT.PlayerState.PLAYING) broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'playing' });
+                        else if (state == YT.PlayerState.PAUSED) broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'paused' });
                     } else if (currentVideoType === 'html5') {
                         broadcastData({ type: 'vid_sync', time: syncVideo.currentTime, source: 'html5', state: syncVideo.paused ? 'paused' : 'playing' });
                     }
@@ -612,58 +691,28 @@
 
         function handleRemoteVideoSync(data) {
             isVideoBroadcasting = true; 
-            
             if (data.type === 'vid_load') {
                 loadVideoPlayer(data.parsed);
                 showToast("🎬 Host started media playback");
             }
-            
             else if (data.type === 'vid_sync' || data.type === 'vid_play' || data.type === 'vid_pause' || data.type === 'vid_seek') {
                 if (data.source === 'youtube' && ytPlayer && ytPlayer.seekTo) {
                     let localTime = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
                     let hostTime = data.time;
+                    if (Math.abs(localTime - hostTime) > 2) ytPlayer.seekTo(hostTime, true);
                     
-                    if (Math.abs(localTime - hostTime) > 2) {
-                        ytPlayer.seekTo(hostTime, true);
-                    }
-                    
-                    if ((data.state === 'playing' || data.type === 'vid_play') && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
-                        ytPlayer.playVideo();
-                    } else if ((data.state === 'paused' || data.type === 'vid_pause') && ytPlayer.getPlayerState() !== YT.PlayerState.PAUSED) {
-                        ytPlayer.pauseVideo();
-                    }
+                    if ((data.state === 'playing' || data.type === 'vid_play') && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) ytPlayer.playVideo();
+                    else if ((data.state === 'paused' || data.type === 'vid_pause') && ytPlayer.getPlayerState() !== YT.PlayerState.PAUSED) ytPlayer.pauseVideo();
                 } 
                 else if (data.source === 'html5') {
-                    if (Math.abs(syncVideo.currentTime - data.time) > 2) {
-                        syncVideo.currentTime = data.time;
-                    }
-                    if ((data.state === 'playing' || data.type === 'vid_play') && syncVideo.paused) {
-                        syncVideo.play().catch(e => console.log("Auto-play blocked"));
-                    } else if ((data.state === 'paused' || data.type === 'vid_pause') && !syncVideo.paused) {
-                        syncVideo.pause();
-                    }
+                    if (Math.abs(syncVideo.currentTime - data.time) > 2) syncVideo.currentTime = data.time;
+                    
+                    if ((data.state === 'playing' || data.type === 'vid_play') && syncVideo.paused) syncVideo.play().catch(e => console.log("Auto-play blocked"));
+                    else if ((data.state === 'paused' || data.type === 'vid_pause') && !syncVideo.paused) syncVideo.pause();
                 }
             }
-
             setTimeout(() => { isVideoBroadcasting = false; }, 500);
         }
-
-        // --- CINEMA MODE (FULLSCREEN API) ---
-        cinemaBtn.onclick = () => {
-            if (!document.fullscreenElement) {
-                if (videoWrapper.requestFullscreen) {
-                    videoWrapper.requestFullscreen();
-                } else if (videoWrapper.webkitRequestFullscreen) { /* Safari */
-                    videoWrapper.webkitRequestFullscreen();
-                } else if (videoWrapper.msRequestFullscreen) { /* IE11 */
-                    videoWrapper.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        };
 
         // --- GLOBAL SYNC UI ---
         function setPeerIcon(peerId, state) {
@@ -674,20 +723,37 @@
             else iconSpan.innerText = '🎙️';
         }
 
-        // --- PERSONAL CONTROLS ---
+        // --- PERSONAL CONTROLS (Ghost & Mute) ---
         function toggleSelfMute(forcedState = null) {
             isMuted = forcedState !== null ? forcedState : !isMuted;
-            localStream.getAudioTracks()[0].enabled = !isMuted;
+            localStream.getAudioTracks()[0].enabled = !isMuted; // Use original localStream to cut mic data
             muteBtn.innerText = isMuted ? "Unmuted 🔇" : "Mute 🎙️";
             muteBtn.style.color = isMuted ? "#ff3366" : "#00ffcc";
             muteBtn.style.borderColor = isMuted ? "#ff3366" : "#00ffcc";
-
             setPeerIcon('me', isMuted ? 'muted' : 'unmuted');
             globalMuteStates['me'] = isMuted;
-
             broadcastData({ type: 'sync_mute', state: isMuted });
         }
         muteBtn.onclick = () => toggleSelfMute();
+
+        ghostBtn.onclick = () => {
+            isGhostMode = !isGhostMode;
+            if(isGhostMode) {
+                ghostDryGain.gain.value = 0; // Cut normal voice
+                ghostWetGain.gain.value = 1.5; // Boost Robotic Voice
+                ghostBtn.innerText = "Ghost 🦹";
+                ghostBtn.style.background = "#9d4edd";
+                ghostBtn.style.color = "#000";
+                showToast("🎭 Phantom Voice Modulator Activated");
+            } else {
+                ghostDryGain.gain.value = 1; // Normal Voice Back
+                ghostWetGain.gain.value = 0; // Cut Robotic Voice
+                ghostBtn.innerText = "Ghost 🎭";
+                ghostBtn.style.background = "transparent";
+                ghostBtn.style.color = "#9d4edd";
+                showToast("🎙️ Voice Modulator Deactivated");
+            }
+        };
 
         raiseHandBtn.onclick = () => {
             showToast("✋ You raised your hand");
@@ -823,14 +889,14 @@
             setupActiveConnection(conn);
             delete pendingRequests[peerId];
             renderLobby();
-        };
+        }
 
         window.denyFromLobby = function(peerId) {
             const conn = pendingRequests[peerId].conn;
             conn.send({ type: 'decision', status: 'declined', reason: 'Host denied access.' });
             delete pendingRequests[peerId];
             renderLobby();
-        };
+        }
 
         // --- ACTIVE CONNECTION SETUP ---
         function setupActiveConnection(conn) {
@@ -846,16 +912,7 @@
                     if(isHost && currentVideoType !== 'none') {
                         let urlToSync = (currentVideoType === 'youtube') ? videoUrlInput.value : syncVideo.src;
                         let idToSync = (currentVideoType === 'youtube' && ytPlayer && ytPlayer.getVideoData) ? ytPlayer.getVideoData().video_id : null;
-                        
                         conn.send({ type: 'vid_load', parsed: { type: currentVideoType, src: urlToSync, id: idToSync } });
-                        
-                        if(currentVideoType === 'youtube' && ytPlayer) {
-                            let state = ytPlayer.getPlayerState();
-                            if(state == YT.PlayerState.PLAYING) conn.send({ type: 'vid_play', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-                            else if(state == YT.PlayerState.PAUSED) conn.send({ type: 'vid_pause', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-                        } else if(currentVideoType === 'html5') {
-                            conn.send({ type: syncVideo.paused ? 'vid_pause' : 'vid_play', time: syncVideo.currentTime, source: 'html5' });
-                        }
                     }
                 }
                 else if (data.type === 'chat') { renderChatMessage(data.sender, data.text); }
@@ -886,12 +943,16 @@
                         if (hBtn) { hBtn.innerText = data.state ? 'Unmute' : 'Mute'; hBtn.style.color = data.state ? '#ff3366' : '#ffaa00'; }
                     }
                 }
+                else if (data.type === 'burn_protocol') {
+                    triggerBurnSequence(); // Self destruct if host says so
+                }
             });
 
             conn.on('close', () => removePeer(conn.peer));
             setTimeout(() => { if (conn.open) conn.send({ type: 'name_broadcast', name: myName, isMuted: isMuted }); }, 1000);
         }
 
+        // NOTE: We now send the processedLocalStream (Ghost Modulated) to peers!
         function setupActiveCall(call) {
             calls[call.peer] = call;
             call.on('stream', (remoteStream) => addAudio(call.peer, remoteStream));
@@ -911,6 +972,7 @@
 
             isHost = true;
             setupHostVideoSync(); // Unlock host video tools
+            burnBtn.style.display = 'block'; // Unhide the Burn Button for Host
 
             const roomKey = Math.floor(1000 + Math.random() * 9000).toString();
             roomIdDisplay.innerText = roomKey;
@@ -922,7 +984,7 @@
                 mainMenu.style.display = 'none'; roomArea.style.display = 'block';
                 roomContainer.classList.add('room-active');
                 statusText.innerText = `Host Ready. Capacity: ${maxLimit}`;
-                addParticipantUI('me', myName, isMuted, localStream); 
+                addParticipantUI('me', myName, isMuted, processedLocalStream); 
             });
 
             peer.on('connection', (conn) => {
@@ -940,7 +1002,7 @@
             });
 
             peer.on('call', (call) => {
-                if (connections[call.peer]) { call.answer(localStream); setupActiveCall(call); } 
+                if (connections[call.peer]) { call.answer(processedLocalStream); setupActiveCall(call); } 
                 else { call.close(); }
             });
         };
@@ -979,15 +1041,15 @@
                                 await showModal('alert', "Access Granted ✅");
                                 
                                 setupActiveConnection(handshakeConn);
-                                addParticipantUI('me', myName, isMuted, localStream); 
+                                addParticipantUI('me', myName, isMuted, processedLocalStream); 
                                 
                                 data.peers.forEach(peerId => {
                                     if(!connections[peerId]) {
                                         const newConn = peer.connect(peerId); setupActiveConnection(newConn);
-                                        const newCall = peer.call(peerId, localStream); setupActiveCall(newCall);
+                                        const newCall = peer.call(peerId, processedLocalStream); setupActiveCall(newCall);
                                     }
                                 });
-                                const call = peer.call(hostId, localStream); setupActiveCall(call);
+                                const call = peer.call(hostId, processedLocalStream); setupActiveCall(call);
                             } else {
                                 await showModal('alert', "Request Denied: " + data.reason + " ❌");
                                 location.reload();
@@ -1002,14 +1064,14 @@
                 });
                 
                 peer.on('connection', (conn) => { setupActiveConnection(conn); });
-                peer.on('call', (call) => { call.answer(localStream); setupActiveCall(call); });
+                peer.on('call', (call) => { call.answer(processedLocalStream); setupActiveCall(call); });
                 
             } else {
                 if (roomKey !== null) await showModal('alert', "Please enter a valid 4-digit key.");
             }
         };
 
-        // --- LEAVE LOGIC ---
+        // --- NORMAL LEAVE LOGIC ---
         endBtn.onclick = () => {
             Object.values(connections).forEach(conn => {
                 if (conn.open) conn.send({ type: 'hangup' });
