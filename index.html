@@ -20,9 +20,7 @@
             text-align: center; width: 100%; max-width: 400px; border: 1px solid #333; position: relative; transition: all 0.3s ease;
         }
         
-        /* Expand container for room layout */
         .container.room-active { max-width: 950px; padding: 20px; }
-        
         h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
         
         input {
@@ -45,26 +43,27 @@
         .status { font-size: 14px; color: #aaa; margin-top: 5px; margin-bottom: 15px; font-weight: bold; }
         .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
 
-        /* --- RESPONSIVE ROOM LAYOUT (Original Classic Structure) --- */
+        /* --- ROOM LAYOUT --- */
         .room-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; align-items: stretch; }
         .left-panel { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; align-items: center; }
         .right-panel { flex: 1.8; min-width: 320px; display: flex; flex-direction: column; background: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; height: 500px; }
 
-        /* --- PARTICIPANTS & VISUALIZER --- */
-        #participantList {
-            width: 100%; background: #111; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-top: 10px;
-            max-height: 250px; overflow-y: auto; text-align: left; box-sizing: border-box;
-        }
-        .participant-item {
-            color: #00ffcc; font-size: 14px; padding: 10px; border-bottom: 1px solid #222; font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
-        }
+        /* --- TABS UI --- */
+        .tabs-header { display: flex; border-bottom: 1px solid #333; background: #1a1a1d; }
+        .tab-btn { flex: 1; padding: 12px 5px; margin: 0; border: none; background: transparent; color: #888; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; border-radius: 0; }
+        .tab-btn:hover { color: #fff; background: #222; }
+        .tab-btn.active { color: #00ffcc; border-bottom: 2px solid #00ffcc; background: #111; }
+        .tab-content { display: none; flex-direction: column; flex: 1; padding: 15px; overflow-y: auto; }
+        .tab-content.active { display: flex; }
+
+        /* --- PARTICIPANTS & LOBBY --- */
+        #participantList { width: 100%; background: #111; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-top: 10px; max-height: 250px; overflow-y: auto; text-align: left; box-sizing: border-box; }
+        .participant-item { color: #00ffcc; font-size: 14px; padding: 10px; border-bottom: 1px solid #222; font-weight: bold; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .participant-item:last-child { border-bottom: none; }
         .participant-info { display: flex; align-items: center; gap: 8px; flex: 1; }
         .status-icon { font-size: 16px; width: 20px; text-align: center; display: inline-block; }
         canvas.visualizer { width: 40px; height: 15px; background: transparent; border-radius: 2px; }
 
-        /* --- HOST CONTROLS & LOBBY --- */
         .host-action-group { display: flex; gap: 5px; }
         .host-action-btn { background: transparent; border: 1px solid; padding: 6px 10px; font-size: 12px; margin: 0; border-radius: 4px; cursor: pointer; }
         .btn-mute-remote { border-color: #ffaa00; color: #ffaa00; }
@@ -79,21 +78,11 @@
         .btn-admit { border: 1px solid #00ffcc; color: #00ffcc; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
         .btn-deny { border: 1px solid #ff3366; color: #ff3366; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
 
-        /* --- TABS UI FOR RIGHT PANEL --- */
-        .tabs-header { display: flex; border-bottom: 1px solid #333; background: #1a1a1d; }
-        .tab-btn { flex: 1; padding: 12px 5px; margin: 0; border: none; background: transparent; color: #888; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; border-radius: 0; }
-        .tab-btn:hover { color: #fff; background: #222; }
-        .tab-btn.active { color: #00ffcc; border-bottom: 2px solid #00ffcc; background: #111; }
-        
-        .tab-content { display: none; flex-direction: column; flex: 1; padding: 15px; overflow-y: auto; }
-        .tab-content.active { display: flex; }
-
         /* --- SECRET CHAT UI --- */
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
         .chat-input-area { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;}
         .chat-input-area input { flex: 1; margin: 0; text-align: left; padding: 10px; font-size: 14px; width: auto; }
         .chat-input-area button { margin: 0; width: 80px; padding: 10px; font-size: 14px; }
-        
         .chat-msg { background: #222; padding: 10px; border-radius: 6px; font-size: 13px; text-align: left; position: relative; overflow: hidden; animation: fadeIn 0.3s ease; }
         .chat-msg .sender { color: #00ffcc; font-weight: bold; margin-bottom: 3px; font-size: 12px; }
         .chat-msg .text { color: #ddd; word-break: break-word; }
@@ -101,7 +90,7 @@
         @keyframes drain { from { width: 100%; } to { width: 0%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- PHANTOM DROP (FILE SHARING) UI --- */
+        /* --- PHANTOM DROP UI --- */
         .file-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px; }
         .file-card { background: #1a1a1d; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; position: relative; }
         .file-card .sender { color: #ffaa00; font-size: 12px; font-weight: bold; text-align: left; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
@@ -115,20 +104,22 @@
         .btn-download:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
         .file-upload-section { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
 
-        /* --- WATCH PARTY UI --- */
-        .watch-instructions { font-size: 13px; color: #aaa; margin-bottom: 15px; text-align: left; line-height: 1.4; }
-        #syncVideo { width: 100%; border-radius: 8px; background: #000; outline: none; border: 1px solid #333; margin-top: 10px; display: none; }
-        .host-video-controls { display: flex; gap: 10px; margin-top: 10px; }
+        /* --- UNIVERSAL MEDIA ENGINE UI --- */
+        .watch-instructions { font-size: 12px; color: #aaa; margin-bottom: 15px; text-align: left; line-height: 1.4; }
+        .host-video-controls { display: flex; gap: 10px; margin-bottom: 15px; }
         .host-video-controls input { flex: 1; margin: 0; padding: 10px; font-size: 13px; width: auto; }
         .host-video-controls button { width: auto; margin: 0; padding: 10px 15px; font-size: 13px; }
+        
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; border: 1px solid #333; display: none; }
+        .video-wrapper video, .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        #syncWarning { color: #ffaa00; font-size: 11px; margin-top: 10px; display: none; text-align: left; }
 
-        /* --- CONTROLS --- */
+        /* --- CONTROLS & UTILS --- */
         .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 10px; }
         .control-btn { width: 100%; margin: 0; padding: 12px; font-size: 14px; }
         .btn-raise { border-color: #ffaa00; color: #ffaa00; }
         .btn-raise:hover { background: #ffaa00; color: #000; }
 
-        /* --- MODALS & TOASTS --- */
         #customModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
         .custom-modal { background: #1a1a1d; padding: 25px; border-radius: 12px; border: 1px solid #00ffcc; text-align: center; width: 300px; }
         .modal-text { color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
@@ -225,16 +216,21 @@
 
                 <div class="tab-content" id="tab-watch">
                     <div class="watch-instructions">
-                        Host can paste a direct video link (MP4/WebM). Play/Pause actions sync automatically for everyone.
+                        <b>Universal Engine:</b> Paste ANY link. YouTube and MP4s will fully sync. Other websites will open as an In-App browser.
                     </div>
                     
                     <div class="host-video-controls" id="hostVideoControls" style="display: none;">
-                        <input type="text" id="videoUrlInput" placeholder="Paste Direct MP4 Link..." autocomplete="off">
+                        <input type="text" id="videoUrlInput" placeholder="Paste ANY link..." autocomplete="off">
                         <button id="loadVideoBtn">Load</button>
                     </div>
                     
-                    <video id="syncVideo" controls playsinline></video>
-                    <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 50px; font-size: 13px;">Waiting for Host to start a video...</div>
+                    <div class="video-wrapper" id="videoWrapper">
+                        <video id="syncVideo" playsinline></video>
+                        <iframe id="genericIframe" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+                    </div>
+                    <p id="syncWarning">⚠️ Note: Generic website detected. Video syncing by Host is disabled for this link due to web security. Everyone can watch independently.</p>
+                    
+                    <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 30px; font-size: 13px;">Waiting for Host to start media...</div>
                 </div>
 
             </div>
@@ -255,7 +251,7 @@
         let globalMuteStates = {}; 
         let pendingRequests = {}; 
 
-        const secretPrefix = "phantom-os-v4-"; 
+        const secretPrefix = "phantom-os-v5-"; 
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
@@ -298,7 +294,7 @@
             document.getElementById('tab-' + tabName).classList.add('active');
         };
 
-        // --- UTILS (Toasts & Modals) ---
+        // --- UTILS ---
         function showToast(message, isWarning = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -347,7 +343,6 @@
             if (!audioCtx) return;
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
-
             try {
                 const src = audioCtx.createMediaStreamSource(stream);
                 const analyser = audioCtx.createAnalyser();
@@ -356,13 +351,11 @@
                 const bufferLength = analyser.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
                 const ctx = canvas.getContext('2d');
-
                 function draw() {
                     visualizerFrames[canvasId] = requestAnimationFrame(draw);
                     analyser.getByteFrequencyData(dataArray);
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = '#00ffcc';
-                    
                     let barWidth = (canvas.width / bufferLength) * 2;
                     let x = 0;
                     for (let i = 0; i < bufferLength; i++) {
@@ -397,7 +390,6 @@
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
                 initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
                 welcomeUserText.innerText = "Logged in as: " + myName; 
             } catch (error) {
@@ -413,11 +405,7 @@
             msgDiv.innerHTML = `<div class="sender">${sender}</div><div class="text">${text}</div>`;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            setTimeout(() => {
-                msgDiv.style.opacity = '0';
-                setTimeout(() => msgDiv.remove(), 300);
-            }, 30000);
+            setTimeout(() => { msgDiv.style.opacity = '0'; setTimeout(() => msgDiv.remove(), 300); }, 30000);
         }
 
         sendChatBtn.onclick = () => {
@@ -429,7 +417,7 @@
         };
         chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatBtn.click(); });
 
-        // --- PHANTOM DROP (FILE SHARING) LOGIC ---
+        // --- PHANTOM DROP (FILE SHARING) ---
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
 
@@ -443,13 +431,11 @@
         function renderFileUI(sender, fileName, fileType, fileSize, fileBlob) {
             const emptyText = fileList.querySelector('div');
             if(emptyText && emptyText.innerText.includes('No files')) emptyText.remove();
-
             const fileUrl = URL.createObjectURL(fileBlob);
             const card = document.createElement('div');
             card.className = 'file-card';
             
             let previewHTML = `<div class="file-preview"><div class="file-icon">📄</div></div>`;
-            
             if (fileType.startsWith('image/')) {
                 previewHTML = `<div class="file-preview"><img src="${fileUrl}" alt="Preview"></div>`;
             } else if (fileType.startsWith('video/')) {
@@ -472,13 +458,10 @@
         fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
-            // Limit warning for free tier ArrayBuffer transfer
             if(file.size > 15 * 1024 * 1024) {
                 const proceed = await showModal('confirm', "File is larger than 15MB. It might take time to send depending on network. Send anyway?");
                 if(!proceed) return;
             }
-
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const arrayBuffer = ev.target.result;
@@ -487,17 +470,69 @@
                 showToast("✅ File sent to group");
             };
             reader.readAsArrayBuffer(file);
-            fileInput.value = ''; // reset
+            fileInput.value = '';
         };
 
-        // --- WATCH PARTY LOGIC ---
+        // --- UNIVERSAL MEDIA ENGINE LOGIC ---
+        const videoWrapper = document.getElementById('videoWrapper');
         const syncVideo = document.getElementById('syncVideo');
+        const genericIframe = document.getElementById('genericIframe');
         const videoUrlInput = document.getElementById('videoUrlInput');
         const loadVideoBtn = document.getElementById('loadVideoBtn');
         const hostVideoControls = document.getElementById('hostVideoControls');
         const videoWaitingText = document.getElementById('videoWaitingText');
+        const syncWarning = document.getElementById('syncWarning');
 
         let isVideoBroadcasting = false;
+        let currentVideoType = 'none';
+
+        // Advanced Parser to detect YouTube, Direct MP4, or Generic Site
+        function parseVideoUrl(url) {
+            const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const ytMatch = url.match(ytRegex);
+            
+            if (ytMatch && ytMatch[1]) {
+                // Return Embeddable YouTube Link
+                return { type: 'youtube', src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&enablejsapi=1` };
+            } 
+            else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                return { type: 'html5', src: url };
+            }
+            else {
+                // Return as Generic Embedded iframe
+                return { type: 'generic', src: url };
+            }
+        }
+
+        function loadVideoPlayer(parsedData) {
+            videoWrapper.style.display = 'block';
+            videoWaitingText.style.display = 'none';
+            currentVideoType = parsedData.type;
+            
+            syncVideo.pause();
+
+            if (parsedData.type === 'html5') {
+                syncWarning.style.display = 'none';
+                genericIframe.style.display = 'none';
+                genericIframe.src = '';
+                
+                syncVideo.style.display = 'block';
+                syncVideo.src = parsedData.src;
+                if(isHost) syncVideo.setAttribute('controls', 'true');
+                else syncVideo.removeAttribute('controls');
+            } 
+            else {
+                // Both YouTube and Generic go into the iframe
+                syncVideo.style.display = 'none';
+                syncVideo.src = '';
+                
+                genericIframe.style.display = 'block';
+                genericIframe.src = parsedData.src;
+                
+                // Show warning that generic sites cannot be force-synced via host due to browser security
+                syncWarning.style.display = 'block';
+            }
+        }
 
         function setupHostVideoSync() {
             hostVideoControls.style.display = 'flex';
@@ -505,48 +540,48 @@
             loadVideoBtn.onclick = () => {
                 const url = videoUrlInput.value.trim();
                 if(!url) return;
-                syncVideo.src = url;
-                syncVideo.style.display = 'block';
-                videoWaitingText.style.display = 'none';
-                broadcastData({ type: 'vid_load', url: url });
-                showToast("🎬 Video loaded for all members");
+                
+                const parsed = parseVideoUrl(url);
+                loadVideoPlayer(parsed);
+                
+                broadcastData({ type: 'vid_load', parsed: parsed });
+                showToast("🎬 Media Loaded for everyone");
             };
 
-            // Capture Host Events
+            // HTML5 Sync Events (Only works on raw MP4s)
             syncVideo.onplay = () => {
-                if(!isVideoBroadcasting) broadcastData({ type: 'vid_play', time: syncVideo.currentTime });
+                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_play', time: syncVideo.currentTime });
             };
             syncVideo.onpause = () => {
-                if(!isVideoBroadcasting) broadcastData({ type: 'vid_pause', time: syncVideo.currentTime });
+                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_pause', time: syncVideo.currentTime });
             };
             syncVideo.onseeked = () => {
-                if(!isVideoBroadcasting) broadcastData({ type: 'vid_seek', time: syncVideo.currentTime });
+                if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_seek', time: syncVideo.currentTime });
             };
         }
 
         function handleRemoteVideoSync(data) {
-            isVideoBroadcasting = true; // Block loop
+            isVideoBroadcasting = true; 
             
             if (data.type === 'vid_load') {
-                syncVideo.src = data.url;
-                syncVideo.style.display = 'block';
-                videoWaitingText.style.display = 'none';
-                syncVideo.removeAttribute('controls'); // Joiners can't control
-                showToast("🎬 Host started a video");
+                loadVideoPlayer(data.parsed);
+                showToast("🎬 Host started media playback");
             }
-            else if (data.type === 'vid_play') {
-                syncVideo.currentTime = data.time;
-                syncVideo.play().catch(e => console.log("Auto-play restricted by browser"));
-            }
-            else if (data.type === 'vid_pause') {
-                syncVideo.currentTime = data.time;
-                syncVideo.pause();
-            }
-            else if (data.type === 'vid_seek') {
-                syncVideo.currentTime = data.time;
+            else if (currentVideoType === 'html5') {
+                if (data.type === 'vid_play') {
+                    syncVideo.currentTime = data.time;
+                    syncVideo.play().catch(e => console.log("Auto-play blocked"));
+                }
+                else if (data.type === 'vid_pause') {
+                    syncVideo.currentTime = data.time;
+                    syncVideo.pause();
+                }
+                else if (data.type === 'vid_seek') {
+                    syncVideo.currentTime = data.time;
+                }
             }
 
-            setTimeout(() => { isVideoBroadcasting = false; }, 100);
+            setTimeout(() => { isVideoBroadcasting = false; }, 500);
         }
 
         // --- GLOBAL SYNC UI ---
@@ -562,7 +597,6 @@
         function toggleSelfMute(forcedState = null) {
             isMuted = forcedState !== null ? forcedState : !isMuted;
             localStream.getAudioTracks()[0].enabled = !isMuted;
-            
             muteBtn.innerText = isMuted ? "Unmuted 🔇" : "Mute 🎙️";
             muteBtn.style.color = isMuted ? "#ff3366" : "#00ffcc";
             muteBtn.style.borderColor = isMuted ? "#ff3366" : "#00ffcc";
@@ -579,7 +613,6 @@
             setPeerIcon('me', 'hand');
             clearTimeout(handRaiseTimer);
             handRaiseTimer = setTimeout(() => { setPeerIcon('me', globalMuteStates['me'] ? 'muted' : 'unmuted'); }, 5000);
-
             broadcastData({ type: 'raise_hand', name: myName });
         };
 
@@ -638,9 +671,7 @@
             }
             participantList.appendChild(div);
 
-            if(stream) {
-                setTimeout(() => attachVisualizer(stream, canvasId), 500);
-            }
+            if(stream) { setTimeout(() => attachVisualizer(stream, canvasId), 500); }
         }
 
         function removeParticipantUI(peerId) {
@@ -658,10 +689,7 @@
             const audio = document.createElement('audio');
             audio.id = 'audio-' + peerId; audio.srcObject = stream; audio.autoplay = true;
             audioContainer.appendChild(audio);
-            
-            if(document.getElementById('vis-' + peerId)){
-                attachVisualizer(stream, 'vis-' + peerId);
-            }
+            if(document.getElementById('vis-' + peerId)){ attachVisualizer(stream, 'vis-' + peerId); }
         }
 
         function removePeer(peerId) {
@@ -689,10 +717,7 @@
         function renderLobby() {
             lobbyList.innerHTML = "";
             const keys = Object.keys(pendingRequests);
-            if (keys.length === 0) {
-                lobbyArea.style.display = 'none';
-                return;
-            }
+            if (keys.length === 0) { lobbyArea.style.display = 'none'; return; }
             lobbyArea.style.display = 'block';
             
             keys.forEach(peerId => {
@@ -711,8 +736,7 @@
         window.admitFromLobby = function(peerId) {
             const conn = pendingRequests[peerId].conn;
             if (Object.keys(connections).length + 1 >= maxLimit) {
-                showToast("Room is full! Kick someone first.", true);
-                return;
+                showToast("Room is full! Kick someone first.", true); return;
             }
             conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
             setupActiveConnection(conn);
@@ -738,22 +762,15 @@
                     if(audioEl && audioEl.srcObject) stream = audioEl.srcObject;
                     addParticipantUI(conn.peer, data.name, data.isMuted, stream);
 
-                    // Sync video if running
-                    if(isHost && syncVideo.src && !syncVideo.src.endsWith(window.location.host + '/')) {
-                        conn.send({ type: 'vid_load', url: syncVideo.src });
-                        conn.send({ type: syncVideo.paused ? 'vid_pause' : 'vid_play', time: syncVideo.currentTime });
+                    // Sync current video to newly joined user
+                    if(isHost && currentVideoType !== 'none') {
+                        let urlToSync = (currentVideoType === 'html5') ? syncVideo.src : genericIframe.src;
+                        conn.send({ type: 'vid_load', parsed: { type: currentVideoType, src: urlToSync } });
                     }
                 }
-                else if (data.type === 'chat') {
-                    renderChatMessage(data.sender, data.text);
-                }
-                else if (data.type === 'file') {
-                    // Receive File
-                    renderFileUI(data.sender, data.name, data.filetype, data.size, new Blob([data.data]));
-                }
-                else if (data.type.startsWith('vid_')) {
-                    handleRemoteVideoSync(data);
-                }
+                else if (data.type === 'chat') { renderChatMessage(data.sender, data.text); }
+                else if (data.type === 'file') { renderFileUI(data.sender, data.name, data.filetype, data.size, new Blob([data.data])); }
+                else if (data.type.startsWith('vid_')) { handleRemoteVideoSync(data); }
                 else if (data.type === 'hangup') { removePeer(conn.peer); }
                 else if (data.type === 'kicked') {
                     await showModal('alert', "⚠️ You have been KICKED by the Host.");
@@ -762,37 +779,27 @@
                 else if (data.type === 'raise_hand') {
                     showToast(`✋ ${data.name} raised hand!`);
                     setPeerIcon(conn.peer, 'hand');
-                    setTimeout(() => {
-                        setPeerIcon(conn.peer, globalMuteStates[conn.peer] ? 'muted' : 'unmuted');
-                    }, 5000);
+                    setTimeout(() => { setPeerIcon(conn.peer, globalMuteStates[conn.peer] ? 'muted' : 'unmuted'); }, 5000);
                 }
                 else if (data.type === 'host_control') {
                     if (data.action === 'mute') {
-                        toggleSelfMute(true); 
-                        showToast("⚠️ You were muted by Host", true);
+                        toggleSelfMute(true); showToast("⚠️ You were muted by Host", true);
                     } else if (data.action === 'unmute') {
-                        toggleSelfMute(false); 
-                        showToast("✅ Host unmuted you");
+                        toggleSelfMute(false); showToast("✅ Host unmuted you");
                     }
                 }
                 else if (data.type === 'sync_mute') {
                     globalMuteStates[conn.peer] = data.state;
                     setPeerIcon(conn.peer, data.state ? 'muted' : 'unmuted');
-                    
                     if (isHost) {
                         const hBtn = document.getElementById('host-mute-' + conn.peer);
-                        if (hBtn) {
-                            hBtn.innerText = data.state ? 'Unmute' : 'Mute';
-                            hBtn.style.color = data.state ? '#ff3366' : '#ffaa00';
-                        }
+                        if (hBtn) { hBtn.innerText = data.state ? 'Unmute' : 'Mute'; hBtn.style.color = data.state ? '#ff3366' : '#ffaa00'; }
                     }
                 }
             });
 
             conn.on('close', () => removePeer(conn.peer));
-            setTimeout(() => { 
-                if (conn.open) conn.send({ type: 'name_broadcast', name: myName, isMuted: isMuted }); 
-            }, 1000);
+            setTimeout(() => { if (conn.open) conn.send({ type: 'name_broadcast', name: myName, isMuted: isMuted }); }, 1000);
         }
 
         function setupActiveCall(call) {
@@ -837,10 +844,7 @@
                         pendingRequests[conn.peer] = { name: data.joinerName, conn: conn };
                         renderLobby();
                         showToast(`⏳ ${data.joinerName} is waiting in the Lobby.`);
-                        
-                        conn.on('close', () => { 
-                            delete pendingRequests[conn.peer]; renderLobby(); 
-                        });
+                        conn.on('close', () => { delete pendingRequests[conn.peer]; renderLobby(); });
                     }
                 });
             });
@@ -893,7 +897,6 @@
                                         const newCall = peer.call(peerId, localStream); setupActiveCall(newCall);
                                     }
                                 });
-
                                 const call = peer.call(hostId, localStream); setupActiveCall(call);
                             } else {
                                 await showModal('alert', "Request Denied: " + data.reason + " ❌");
