@@ -216,7 +216,7 @@
 
                 <div class="tab-content" id="tab-watch">
                     <div class="watch-instructions">
-                        <b>Universal Engine:</b> Paste ANY link. YouTube and MP4s will fully sync. Other websites will open as an In-App browser.
+                        <b>Universal Engine:</b> Paste ANY link. YouTube and MP4s will fully sync. Ad-blockers recommended for best sync experience.
                     </div>
                     
                     <div class="host-video-controls" id="hostVideoControls" style="display: none;">
@@ -493,13 +493,12 @@
         let ytPlayer = null;
         let isYtApiReady = false;
         let currentVideoType = 'none';
+        let syncHeartbeat = null;
 
-        // YouTube API Ready Callback
         window.onYouTubeIframeAPIReady = function() {
             isYtApiReady = true;
         };
 
-        // Advanced Parser
         function parseVideoUrl(url) {
             const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
             const ytMatch = url.match(ytRegex);
@@ -520,7 +519,6 @@
             videoWaitingText.style.display = 'none';
             currentVideoType = parsedData.type;
             
-            // Hide and pause everything initially
             syncVideo.pause();
             syncVideo.style.display = 'none';
             ytPlayerContainer.style.display = 'none';
@@ -552,7 +550,6 @@
             }
         }
 
-        // Host Youtube Event listener
         function onYtStateChange(event) {
             if(!isHost || isVideoBroadcasting) return;
             if (event.data == YT.PlayerState.PLAYING) {
@@ -576,7 +573,6 @@
                 showToast("🎬 Media Loaded for everyone");
             };
 
-            // HTML5 Sync Events
             syncVideo.onplay = () => {
                 if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_play', time: syncVideo.currentTime, source: 'html5' });
             };
@@ -586,6 +582,23 @@
             syncVideo.onseeked = () => {
                 if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_seek', time: syncVideo.currentTime, source: 'html5' });
             };
+
+            // 🫀 THE HEARTBEAT MASTER SYNC (Only Host runs this)
+            if (syncHeartbeat) clearInterval(syncHeartbeat);
+            syncHeartbeat = setInterval(() => {
+                if (isHost && isVideoBroadcasting === false && currentVideoType !== 'none') {
+                    if (currentVideoType === 'youtube' && ytPlayer && ytPlayer.getPlayerState) {
+                        let state = ytPlayer.getPlayerState();
+                        if (state == YT.PlayerState.PLAYING) {
+                            broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'playing' });
+                        } else if (state == YT.PlayerState.PAUSED) {
+                            broadcastData({ type: 'vid_sync', time: ytPlayer.getCurrentTime(), source: 'youtube', state: 'paused' });
+                        }
+                    } else if (currentVideoType === 'html5') {
+                        broadcastData({ type: 'vid_sync', time: syncVideo.currentTime, source: 'html5', state: syncVideo.paused ? 'paused' : 'playing' });
+                    }
+                }
+            }, 3000); // Forces sync every 3 seconds to bypass Ads
         }
 
         function handleRemoteVideoSync(data) {
@@ -595,26 +608,34 @@
                 loadVideoPlayer(data.parsed);
                 showToast("🎬 Host started media playback");
             }
-            else if (data.type === 'vid_play') {
-                if(data.source === 'youtube' && ytPlayer && ytPlayer.playVideo) {
-                    if(Math.abs(ytPlayer.getCurrentTime() - data.time) > 2) ytPlayer.seekTo(data.time, true);
-                    ytPlayer.playVideo();
-                } else if(data.source === 'html5') {
-                    syncVideo.currentTime = data.time;
-                    syncVideo.play().catch(e => console.log("Auto-play blocked"));
+            
+            // 🫀 HEARTBEAT RECEIVER (Force Sync)
+            else if (data.type === 'vid_sync' || data.type === 'vid_play' || data.type === 'vid_pause' || data.type === 'vid_seek') {
+                if (data.source === 'youtube' && ytPlayer && ytPlayer.seekTo) {
+                    let localTime = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
+                    let hostTime = data.time;
+                    
+                    // If Joiner is out of sync by more than 2 seconds (e.g. stuck on an ad), snap to host time!
+                    if (Math.abs(localTime - hostTime) > 2) {
+                        ytPlayer.seekTo(hostTime, true);
+                    }
+                    
+                    if ((data.state === 'playing' || data.type === 'vid_play') && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+                        ytPlayer.playVideo();
+                    } else if ((data.state === 'paused' || data.type === 'vid_pause') && ytPlayer.getPlayerState() !== YT.PlayerState.PAUSED) {
+                        ytPlayer.pauseVideo();
+                    }
+                } 
+                else if (data.source === 'html5') {
+                    if (Math.abs(syncVideo.currentTime - data.time) > 2) {
+                        syncVideo.currentTime = data.time;
+                    }
+                    if ((data.state === 'playing' || data.type === 'vid_play') && syncVideo.paused) {
+                        syncVideo.play().catch(e => console.log("Auto-play blocked"));
+                    } else if ((data.state === 'paused' || data.type === 'vid_pause') && !syncVideo.paused) {
+                        syncVideo.pause();
+                    }
                 }
-            }
-            else if (data.type === 'vid_pause') {
-                if(data.source === 'youtube' && ytPlayer && ytPlayer.pauseVideo) {
-                    ytPlayer.pauseVideo();
-                    ytPlayer.seekTo(data.time, true);
-                } else if(data.source === 'html5') {
-                    syncVideo.currentTime = data.time;
-                    syncVideo.pause();
-                }
-            }
-            else if (data.type === 'vid_seek') {
-                if(data.source === 'html5') syncVideo.currentTime = data.time;
             }
 
             setTimeout(() => { isVideoBroadcasting = false; }, 500);
@@ -798,20 +819,10 @@
                     if(audioEl && audioEl.srcObject) stream = audioEl.srcObject;
                     addParticipantUI(conn.peer, data.name, data.isMuted, stream);
 
-                    // Sync current video to newly joined user
                     if(isHost && currentVideoType !== 'none') {
-                        let urlToSync = (currentVideoType === 'html5') ? syncVideo.src : genericIframe.src;
+                        let urlToSync = (currentVideoType === 'youtube') ? videoUrlInput.value : syncVideo.src;
                         let idToSync = (currentVideoType === 'youtube' && ytPlayer && ytPlayer.getVideoData) ? ytPlayer.getVideoData().video_id : null;
-                        
                         conn.send({ type: 'vid_load', parsed: { type: currentVideoType, src: urlToSync, id: idToSync } });
-                        
-                        if(currentVideoType === 'youtube' && ytPlayer) {
-                            let state = ytPlayer.getPlayerState();
-                            if(state == YT.PlayerState.PLAYING) conn.send({ type: 'vid_play', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-                            else if(state == YT.PlayerState.PAUSED) conn.send({ type: 'vid_pause', time: ytPlayer.getCurrentTime(), source: 'youtube' });
-                        } else if(currentVideoType === 'html5') {
-                            conn.send({ type: syncVideo.paused ? 'vid_pause' : 'vid_play', time: syncVideo.currentTime, source: 'html5' });
-                        }
                     }
                 }
                 else if (data.type === 'chat') { renderChatMessage(data.sender, data.text); }
@@ -973,6 +984,7 @@
             setTimeout(() => {
                 if (peer) peer.destroy(); 
                 if (localStream) localStream.getTracks().forEach(track => track.stop()); 
+                if (syncHeartbeat) clearInterval(syncHeartbeat);
                 location.reload(); 
             }, 200);
         };
