@@ -113,6 +113,10 @@
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; border: 1px solid #333; display: none; }
         .video-wrapper video, .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         #syncWarning { color: #ffaa00; font-size: 11px; margin-top: 10px; display: none; text-align: left; }
+        
+        /* Cinema Mode Button */
+        .btn-cinema { background: #111; color: #fff; border: 1px solid #00ffcc; padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; display: none; transition: 0.3s; }
+        .btn-cinema:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
 
         /* --- CONTROLS & UTILS --- */
         .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 10px; }
@@ -216,7 +220,7 @@
 
                 <div class="tab-content" id="tab-watch">
                     <div class="watch-instructions">
-                        <b>Universal Engine:</b> Paste ANY link. YouTube and MP4s will fully sync. Ad-blockers recommended for best sync experience.
+                        <b>Universal Engine:</b> Paste ANY link. Ad-blockers recommended for seamless syncing.
                     </div>
                     
                     <div class="host-video-controls" id="hostVideoControls" style="display: none;">
@@ -231,6 +235,9 @@
                         </div>
                         <iframe id="genericIframe" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation" style="display:none;"></iframe>
                     </div>
+                    
+                    <button id="cinemaBtn" class="btn-cinema">Enter Cinema Mode 🔲</button>
+                    
                     <p id="syncWarning">⚠️ Note: Generic website detected. Video syncing by Host is disabled for this link due to web security. Everyone can watch independently.</p>
                     
                     <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 30px; font-size: 13px;">Waiting for Host to start media...</div>
@@ -488,6 +495,7 @@
         const hostVideoControls = document.getElementById('hostVideoControls');
         const videoWaitingText = document.getElementById('videoWaitingText');
         const syncWarning = document.getElementById('syncWarning');
+        const cinemaBtn = document.getElementById('cinemaBtn');
 
         let isVideoBroadcasting = false;
         let ytPlayer = null;
@@ -517,6 +525,7 @@
         function loadVideoPlayer(parsedData) {
             videoWrapper.style.display = 'block';
             videoWaitingText.style.display = 'none';
+            cinemaBtn.style.display = 'block'; // Show Cinema Button
             currentVideoType = parsedData.type;
             
             syncVideo.pause();
@@ -532,7 +541,8 @@
                 } else if(isYtApiReady) {
                     ytPlayer = new YT.Player('ytPlayer', {
                         height: '100%', width: '100%', videoId: parsedData.id,
-                        playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1 },
+                        // 'fs': 1 enables native fullscreen if available
+                        playerVars: { 'playsinline': 1, 'controls': isHost ? 1 : 0, 'disablekb': isHost ? 0 : 1, 'fs': 1 },
                         events: { 'onStateChange': onYtStateChange }
                     });
                 }
@@ -583,7 +593,6 @@
                 if(!isVideoBroadcasting && currentVideoType === 'html5') broadcastData({ type: 'vid_seek', time: syncVideo.currentTime, source: 'html5' });
             };
 
-            // 🫀 THE HEARTBEAT MASTER SYNC (Only Host runs this)
             if (syncHeartbeat) clearInterval(syncHeartbeat);
             syncHeartbeat = setInterval(() => {
                 if (isHost && isVideoBroadcasting === false && currentVideoType !== 'none') {
@@ -598,7 +607,7 @@
                         broadcastData({ type: 'vid_sync', time: syncVideo.currentTime, source: 'html5', state: syncVideo.paused ? 'paused' : 'playing' });
                     }
                 }
-            }, 3000); // Forces sync every 3 seconds to bypass Ads
+            }, 3000); 
         }
 
         function handleRemoteVideoSync(data) {
@@ -609,13 +618,11 @@
                 showToast("🎬 Host started media playback");
             }
             
-            // 🫀 HEARTBEAT RECEIVER (Force Sync)
             else if (data.type === 'vid_sync' || data.type === 'vid_play' || data.type === 'vid_pause' || data.type === 'vid_seek') {
                 if (data.source === 'youtube' && ytPlayer && ytPlayer.seekTo) {
                     let localTime = ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0;
                     let hostTime = data.time;
                     
-                    // If Joiner is out of sync by more than 2 seconds (e.g. stuck on an ad), snap to host time!
                     if (Math.abs(localTime - hostTime) > 2) {
                         ytPlayer.seekTo(hostTime, true);
                     }
@@ -640,6 +647,23 @@
 
             setTimeout(() => { isVideoBroadcasting = false; }, 500);
         }
+
+        // --- CINEMA MODE (FULLSCREEN API) ---
+        cinemaBtn.onclick = () => {
+            if (!document.fullscreenElement) {
+                if (videoWrapper.requestFullscreen) {
+                    videoWrapper.requestFullscreen();
+                } else if (videoWrapper.webkitRequestFullscreen) { /* Safari */
+                    videoWrapper.webkitRequestFullscreen();
+                } else if (videoWrapper.msRequestFullscreen) { /* IE11 */
+                    videoWrapper.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
 
         // --- GLOBAL SYNC UI ---
         function setPeerIcon(peerId, state) {
@@ -822,7 +846,16 @@
                     if(isHost && currentVideoType !== 'none') {
                         let urlToSync = (currentVideoType === 'youtube') ? videoUrlInput.value : syncVideo.src;
                         let idToSync = (currentVideoType === 'youtube' && ytPlayer && ytPlayer.getVideoData) ? ytPlayer.getVideoData().video_id : null;
+                        
                         conn.send({ type: 'vid_load', parsed: { type: currentVideoType, src: urlToSync, id: idToSync } });
+                        
+                        if(currentVideoType === 'youtube' && ytPlayer) {
+                            let state = ytPlayer.getPlayerState();
+                            if(state == YT.PlayerState.PLAYING) conn.send({ type: 'vid_play', time: ytPlayer.getCurrentTime(), source: 'youtube' });
+                            else if(state == YT.PlayerState.PAUSED) conn.send({ type: 'vid_pause', time: ytPlayer.getCurrentTime(), source: 'youtube' });
+                        } else if(currentVideoType === 'html5') {
+                            conn.send({ type: syncVideo.paused ? 'vid_pause' : 'vid_play', time: syncVideo.currentTime, source: 'html5' });
+                        }
                     }
                 }
                 else if (data.type === 'chat') { renderChatMessage(data.sender, data.text); }
