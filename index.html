@@ -3,32 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phantom Voice Room</title>
+    <title>Phantom Secure Voice Room</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         body {
-            background-color: #0f0f11;
-            color: #e0e0e0;
+            background-color: #0f0f11; color: #e0e0e0;
             font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; flex-direction: column; padding: 20px; box-sizing: border-box;
         }
         .container {
-            background: #1a1a1d;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 380px;
-            border: 1px solid #333;
-            position: relative;
+            background: #1a1a1d; padding: 30px; border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.1); text-align: center;
+            width: 100%; max-width: 380px; border: 1px solid #333; position: relative;
         }
         h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
         
@@ -53,68 +40,83 @@
         #mainMenu, #roomArea { display: none; }
         
         .key-display { font-size: 32px; color: #fff; letter-spacing: 5px; margin: 10px 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-        .status { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 20px; }
+        .status { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 20px; font-weight: bold; }
         .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Participant List & Kick Button */
+        /* Participant List & Host Action Buttons */
         #participantList {
             width: 90%; background: #111; border: 1px solid #333;
             border-radius: 8px; padding: 10px; margin-top: 10px;
             max-height: 180px; overflow-y: auto; text-align: left;
         }
         .participant-item {
-            color: #00ffcc; font-size: 15px; padding: 10px;
+            color: #00ffcc; font-size: 14px; padding: 10px;
             border-bottom: 1px solid #222; font-weight: bold;
             display: flex; justify-content: space-between; align-items: center;
         }
         .participant-item:last-child { border-bottom: none; }
-        .kick-btn {
-            background: transparent; border: 1px solid #ff3366; color: #ff3366;
-            padding: 4px 8px; font-size: 12px; margin: 0; width: auto;
-            border-radius: 4px;
-        }
-        .kick-btn:hover { background: #ff3366; color: #fff; box-shadow: 0 0 5px #ff3366; }
         
-        /* Host Approval Notifications */
+        .host-action-group { display: flex; gap: 5px; }
+        .host-action-btn {
+            background: transparent; border: 1px solid; padding: 4px 8px; font-size: 12px; 
+            margin: 0; width: auto; border-radius: 4px; cursor: pointer;
+        }
+        .btn-mute-remote { border-color: #ffaa00; color: #ffaa00; }
+        .btn-mute-remote:hover { background: #ffaa00; color: #000; box-shadow: 0 0 5px #ffaa00; }
+        .btn-kick-remote { border-color: #ff3366; color: #ff3366; }
+        .btn-kick-remote:hover { background: #ff3366; color: #fff; box-shadow: 0 0 5px #ff3366; }
+        
+        /* Personal Controls Row (Mute & Raise Hand) */
+        .controls-row { display: flex; justify-content: space-between; width: 90%; margin-top: 15px; }
+        .control-btn { width: 48%; margin: 0; padding: 10px; font-size: 14px; }
+        .btn-raise { border-color: #ffaa00; color: #ffaa00; }
+        .btn-raise:hover { background: #ffaa00; color: #000; }
+
+        /* Notification Requests */
         #notificationArea { width: 90%; margin-top: 15px; }
         .join-request {
             background: #222; border: 1px solid #444; padding: 15px;
             border-radius: 8px; margin-bottom: 10px; font-size: 14px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
         .req-name { color: #fff; font-weight: bold; margin-bottom: 10px; }
         .btn-group { display: flex; justify-content: space-between; }
-        .btn-approve, .btn-decline { width: 45%; padding: 8px; font-size: 14px; margin: 0; }
-        .btn-approve { border-color: #00ffcc; color: #00ffcc; }
-        .btn-approve:hover { background: #00ffcc; color: #000; }
-        .btn-decline { border-color: #ff3366; color: #ff3366; }
-        .btn-decline:hover { background: #ff3366; color: #fff; }
+        .btn-approve { width: 45%; border-color: #00ffcc; color: #00ffcc; padding: 8px; margin:0;}
+        .btn-decline { width: 45%; border-color: #ff3366; color: #ff3366; padding: 8px; margin:0;}
 
-        /* Custom Modal UI (Replaces default prompts) */
+        /* Custom Modal UI */
         #customModalOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); display: none;
-            justify-content: center; align-items: center; z-index: 1000;
-            backdrop-filter: blur(5px);
+            justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);
         }
         .custom-modal {
             background: #1a1a1d; padding: 25px; border-radius: 12px;
-            border: 1px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
-            text-align: center; width: 300px;
+            border: 1px solid #00ffcc; text-align: center; width: 300px;
         }
         .modal-text { color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
-        .modal-input {
-            width: 90%; padding: 10px; margin-bottom: 20px;
-            background: #111; border: 1px solid #444; color: #00ffcc;
-            border-radius: 4px; text-align: center; font-family: inherit; display: none;
-        }
+        .modal-input { width: 90%; padding: 10px; margin-bottom: 20px; background: #111; color: #00ffcc; display: none; }
         .modal-btn-group { display: flex; justify-content: space-around; }
         .modal-btn { width: 40%; padding: 10px; font-size: 14px; margin: 0; }
+
+        /* Floating Toast Notification System */
+        #toastContainer {
+            position: fixed; top: 20px; right: 20px; z-index: 2000;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .toast {
+            background: rgba(26, 26, 29, 0.95); border-left: 4px solid #00ffcc;
+            color: #fff; padding: 12px 20px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.5); font-size: 14px;
+            animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 3.7s forwards;
+        }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
         #audioContainer { display: none; }
     </style>
 </head>
 <body>
+
+    <div id="toastContainer"></div>
 
     <div id="customModalOverlay">
         <div class="custom-modal">
@@ -130,7 +132,7 @@
     <div class="container" id="initScreen">
         <h2>SECURE GATEWAY</h2>
         <input type="text" id="userNameInput" placeholder="Enter your Name" autocomplete="off">
-        <button id="enableMicBtn">Initialize Communication</button>
+        <button id="enableMicBtn">Initialize Comm</button>
         <p id="errorMsg" style="color: #ff3366; font-size: 13px; display: none; margin-top: 15px; font-weight: bold;"></p>
     </div>
 
@@ -153,7 +155,12 @@
             <div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>
         </div>
 
-        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 25px;">End & Leave</button>
+        <div class="controls-row">
+            <button class="control-btn" id="muteBtn">Mute 🎙️</button>
+            <button class="control-btn btn-raise" id="raiseHandBtn">Raise Hand ✋</button>
+        </div>
+
+        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 90%;">End & Leave</button>
     </div>
 
     <div id="audioContainer"></div>
@@ -163,13 +170,13 @@
         let localStream;
         let myName = ""; 
         let myRoomName = ""; 
+        let isMuted = false;
         const secretPrefix = "phantom-squad-"; 
         
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
         let calls = {};       
-        let participantNames = {}; // Store real names
 
         // DOM Elements
         const initScreen = document.getElementById('initScreen');
@@ -186,10 +193,24 @@
         const statusText = document.getElementById('statusText');
         const notificationArea = document.getElementById('notificationArea');
         const participantList = document.getElementById('participantList');
+        
+        const muteBtn = document.getElementById('muteBtn');
+        const raiseHandBtn = document.getElementById('raiseHandBtn');
         const endBtn = document.getElementById('endBtn');
         const audioContainer = document.getElementById('audioContainer');
+        const toastContainer = document.getElementById('toastContainer');
 
-        // --- CUSTOM MODAL SYSTEM (Replaces Default Alerts/Prompts) ---
+        // --- TOAST NOTIFICATION SYSTEM ---
+        function showToast(message, isWarning = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            if (isWarning) toast.style.borderLeftColor = '#ff3366';
+            toastContainer.appendChild(toast);
+            setTimeout(() => { if (toast) toast.remove(); }, 4000); // Remove after animation
+        }
+
+        // --- CUSTOM MODAL SYSTEM ---
         function showModal(type, text, placeholder = "") {
             return new Promise((resolve) => {
                 const overlay = document.getElementById('customModalOverlay');
@@ -200,27 +221,19 @@
 
                 modalText.innerText = text;
                 overlay.style.display = 'flex';
-                
-                // Reset states
                 modalInput.value = "";
-                okBtn.onclick = null;
-                cancelBtn.onclick = null;
-
+                
                 if (type === 'alert') {
-                    modalInput.style.display = 'none';
-                    cancelBtn.style.display = 'none';
+                    modalInput.style.display = 'none'; cancelBtn.style.display = 'none';
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
                 } 
                 else if (type === 'confirm') {
-                    modalInput.style.display = 'none';
-                    cancelBtn.style.display = 'block';
+                    modalInput.style.display = 'none'; cancelBtn.style.display = 'block';
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
                     cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
                 } 
                 else if (type === 'prompt') {
-                    modalInput.style.display = 'block';
-                    modalInput.placeholder = placeholder;
-                    cancelBtn.style.display = 'block';
+                    modalInput.style.display = 'block'; modalInput.placeholder = placeholder; cancelBtn.style.display = 'block';
                     modalInput.focus();
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(modalInput.value); };
                     cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(null); };
@@ -232,62 +245,86 @@
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
             if (enteredName === "") {
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = "⚠️ Identity required!";
-                userNameInput.classList.add('input-error'); 
-                return; 
+                errorMsg.style.display = 'block'; errorMsg.innerText = "⚠️ Identity required!";
+                userNameInput.classList.add('input-error'); return; 
             }
-
             myName = enteredName;
-            userNameInput.classList.remove('input-error');
-            errorMsg.style.display = 'none';
+            userNameInput.classList.remove('input-error'); errorMsg.style.display = 'none';
             enableMicBtn.innerText = "Requesting Mic...";
             
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                initScreen.style.display = 'none';
-                mainMenu.style.display = 'flex';
+                initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
                 welcomeUserText.innerText = "Logged in as: " + myName; 
             } catch (error) {
                 enableMicBtn.innerText = "Initialize Comm";
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = "Mic access denied. Please allow to proceed.";
+                errorMsg.style.display = 'block'; errorMsg.innerText = "Mic access denied. Please allow to proceed.";
             }
         };
 
-        // --- UI & KICK FUNCTIONS ---
+        // --- PERSONAL CONTROLS (Self Mute & Raise Hand) ---
+        function toggleSelfMute(forcedState = null) {
+            isMuted = forcedState !== null ? forcedState : !isMuted;
+            localStream.getAudioTracks()[0].enabled = !isMuted;
+            
+            muteBtn.innerText = isMuted ? "Unmuted 🔇" : "Mute 🎙️";
+            muteBtn.style.color = isMuted ? "#ff3366" : "#00ffcc";
+            muteBtn.style.borderColor = isMuted ? "#ff3366" : "#00ffcc";
+
+            // Sync state with Host so Host's button updates
+            Object.values(connections).forEach(conn => {
+                if(conn.open) conn.send({ type: 'sync_mute', state: isMuted });
+            });
+        }
+        muteBtn.onclick = () => toggleSelfMute();
+
+        raiseHandBtn.onclick = () => {
+            showToast("✋ You raised your hand");
+            Object.values(connections).forEach(conn => {
+                if(conn.open) conn.send({ type: 'raise_hand', name: myName });
+            });
+        };
+
+        // --- UI & HOST FUNCTIONS ---
         function addParticipantUI(peerId, name) {
             if (document.getElementById('ui-' + peerId)) return;
             const emptyText = participantList.querySelector('div');
             if(emptyText && emptyText.innerText.includes('Waiting')) emptyText.remove();
 
-            participantNames[peerId] = name;
-
             const div = document.createElement('div');
             div.id = 'ui-' + peerId;
             div.className = 'participant-item';
             
-            // Name tag
             const nameSpan = document.createElement('span');
             nameSpan.innerText = "🎙️ " + name + (peerId === 'me' ? " (You)" : "");
             div.appendChild(nameSpan);
 
-            // Add Kick Button ONLY if I am Host AND the peer is not me
+            // Add Actions for Host
             if (isHost && peerId !== 'me') {
+                const actionGroup = document.createElement('div');
+                actionGroup.className = 'host-action-group';
+
+                const hMuteBtn = document.createElement('button');
+                hMuteBtn.className = 'host-action-btn btn-mute-remote';
+                hMuteBtn.id = 'host-mute-' + peerId;
+                hMuteBtn.innerText = 'Mute';
+                hMuteBtn.onclick = () => hostToggleMute(peerId, hMuteBtn);
+                
                 const kickBtn = document.createElement('button');
-                kickBtn.className = 'kick-btn';
+                kickBtn.className = 'host-action-btn btn-kick-remote';
                 kickBtn.innerText = 'Kick';
                 kickBtn.onclick = () => kickUser(peerId);
-                div.appendChild(kickBtn);
-            }
 
+                actionGroup.appendChild(hMuteBtn);
+                actionGroup.appendChild(kickBtn);
+                div.appendChild(actionGroup);
+            }
             participantList.appendChild(div);
         }
 
         function removeParticipantUI(peerId) {
             const div = document.getElementById('ui-' + peerId);
             if (div) div.remove();
-            delete participantNames[peerId];
             if (participantList.children.length === 0) {
                 participantList.innerHTML = '<div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>';
             }
@@ -296,9 +333,7 @@
         function addAudio(peerId, stream) {
             if (document.getElementById('audio-' + peerId)) return;
             const audio = document.createElement('audio');
-            audio.id = 'audio-' + peerId;
-            audio.srcObject = stream;
-            audio.autoplay = true;
+            audio.id = 'audio-' + peerId; audio.srcObject = stream; audio.autoplay = true;
             audioContainer.appendChild(audio);
         }
 
@@ -310,11 +345,22 @@
             if (audio) audio.remove();
         }
 
-        // Host triggers this function
+        // Host controls
+        function hostToggleMute(peerId, btn) {
+            const isCurrentlyMuted = btn.innerText === 'Unmute';
+            const action = isCurrentlyMuted ? 'unmute' : 'mute';
+            if (connections[peerId]) {
+                connections[peerId].send({ type: 'host_control', action: action });
+                btn.innerText = isCurrentlyMuted ? 'Mute' : 'Unmute';
+                btn.style.color = isCurrentlyMuted ? '#ffaa00' : '#ff3366';
+                btn.style.borderColor = isCurrentlyMuted ? '#ffaa00' : '#ff3366';
+            }
+        }
+
         function kickUser(peerId) {
             if (connections[peerId]) {
-                connections[peerId].send({ type: 'kicked' }); // Bhejo kick signal
-                setTimeout(() => removePeer(peerId), 500); // 0.5s baad connection kaat do
+                connections[peerId].send({ type: 'kicked' });
+                setTimeout(() => removePeer(peerId), 500);
             }
         }
 
@@ -326,22 +372,37 @@
                 if (data.type === 'name_broadcast') {
                     addParticipantUI(conn.peer, data.name);
                 }
-                else if (data.type === 'hangup') {
-                    removePeer(conn.peer);
-                }
+                else if (data.type === 'hangup') { removePeer(conn.peer); }
                 else if (data.type === 'kicked') {
-                    // Agar Host ne mujhe kick kar diya
                     await showModal('alert', "⚠️ You have been KICKED by the Host.");
                     location.reload();
+                }
+                else if (data.type === 'raise_hand') {
+                    showToast(`✋ ${data.name} raised their hand!`);
+                }
+                else if (data.type === 'host_control') {
+                    if (data.action === 'mute') {
+                        toggleSelfMute(true); // Force Mute
+                        showToast("⚠️ You were muted by Host", true);
+                    } else if (data.action === 'unmute') {
+                        toggleSelfMute(false); // Force Unmute
+                        showToast("✅ Host unmuted you");
+                    }
+                }
+                else if (data.type === 'sync_mute' && isHost) {
+                    // Update Host's button if user muted themselves
+                    const hBtn = document.getElementById('host-mute-' + conn.peer);
+                    if (hBtn) {
+                        hBtn.innerText = data.state ? 'Unmute' : 'Mute';
+                        hBtn.style.color = data.state ? '#ff3366' : '#ffaa00';
+                        hBtn.style.borderColor = data.state ? '#ff3366' : '#ffaa00';
+                    }
                 }
             });
 
             conn.on('close', () => removePeer(conn.peer));
 
-            // Tell the new peer my real name
-            setTimeout(() => {
-                if (conn.open) conn.send({ type: 'name_broadcast', name: myName });
-            }, 1000);
+            setTimeout(() => { if (conn.open) conn.send({ type: 'name_broadcast', name: myName }); }, 1000);
         }
 
         function setupActiveCall(call) {
@@ -352,7 +413,6 @@
 
         // --- HOST LOGIC ---
         createBtn.onclick = async () => {
-            // Using Custom Prompts
             const enteredRoomName = await showModal('prompt', "Enter Room Name:", "e.g. Secret Squad");
             if (!enteredRoomName || enteredRoomName.trim() === "") return;
             myRoomName = enteredRoomName.trim();
@@ -373,7 +433,7 @@
                 mainMenu.style.display = 'none';
                 roomArea.style.display = 'flex';
                 statusText.innerText = "Host Ready. Waiting for requests...";
-                addParticipantUI('me', myName); // Shows My real name
+                addParticipantUI('me', myName); 
             });
 
             peer.on('connection', (conn) => {
@@ -402,7 +462,7 @@
                         reqDiv.querySelector('.btn-approve').onclick = () => {
                             conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
                             setupActiveConnection(conn);
-                            addParticipantUI(conn.peer, data.joinerName); // Add joiner name to Host screen
+                            addParticipantUI(conn.peer, data.joinerName);
                             reqDiv.remove();
                         };
                         
@@ -418,10 +478,8 @@
             });
 
             peer.on('call', (call) => {
-                if (connections[call.peer]) {
-                    call.answer(localStream);
-                    setupActiveCall(call);
-                } else { call.close(); }
+                if (connections[call.peer]) { call.answer(localStream); setupActiveCall(call); } 
+                else { call.close(); }
             });
         };
 
@@ -430,54 +488,46 @@
             const roomKey = await showModal('prompt', "Enter 4-digit Invite Key:", "----");
             
             if (roomKey && roomKey.length === 4) {
-                isHost = false;
-                peer = new Peer(); 
+                isHost = false; peer = new Peer(); 
 
                 peer.on('open', (id) => {
                     const hostId = secretPrefix + roomKey;
                     statusText.innerText = "Fetching room data...";
-                    
                     const handshakeConn = peer.connect(hostId);
                     
                     handshakeConn.on('open', () => { handshakeConn.send({ type: 'inquiry' }); });
                     
                     handshakeConn.on('data', async (data) => {
                         if (data.type === 'room_details') {
-                            // Using Custom Confirm Modal
                             const wantsToJoin = await showModal('confirm', `Kya aap "${data.hostName}" ka room "${data.roomName}" join karna chahte hai?`);
-                            
                             if (wantsToJoin) {
-                                mainMenu.style.display = 'none';
-                                roomArea.style.display = 'flex';
+                                mainMenu.style.display = 'none'; roomArea.style.display = 'flex';
                                 roomNameDisplay.innerText = "ROOM: " + data.roomName;
                                 roomIdDisplay.innerText = roomKey;
                                 statusText.innerText = "Waiting for Host Approval... ⏳";
                                 statusText.style.color = "#ffaa00";
-                                
                                 handshakeConn.send({ type: 'request_access', joinerName: myName });
-                            } else {
-                                handshakeConn.close();
-                            }
+                            } else { handshakeConn.close(); }
                         }
                         else if (data.type === 'decision') {
                             if (data.status === 'approved') {
+                                // Bug Fix: Change the hanging waiting text instantly
+                                statusText.innerText = "Connection Active 🟢";
+                                statusText.style.color = "#00ffcc";
+
                                 await showModal('alert', "Access Granted ✅ You are in the room.");
                                 
                                 setupActiveConnection(handshakeConn);
-                                addParticipantUI('me', myName); // Show my own name
+                                addParticipantUI('me', myName); 
                                 
                                 data.peers.forEach(peerId => {
                                     if(!connections[peerId]) {
-                                        const newConn = peer.connect(peerId);
-                                        setupActiveConnection(newConn);
-                                        const newCall = peer.call(peerId, localStream);
-                                        setupActiveCall(newCall);
+                                        const newConn = peer.connect(peerId); setupActiveConnection(newConn);
+                                        const newCall = peer.call(peerId, localStream); setupActiveCall(newCall);
                                     }
                                 });
 
-                                const call = peer.call(hostId, localStream);
-                                setupActiveCall(call);
-                                
+                                const call = peer.call(hostId, localStream); setupActiveCall(call);
                             } else {
                                 await showModal('alert', "Request Denied: " + data.reason + " ❌");
                                 location.reload();
