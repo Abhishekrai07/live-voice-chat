@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phantom Secure Voice Room</title>
+    <title>Phantom Voice Room</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         body {
@@ -28,148 +28,109 @@
             width: 100%;
             max-width: 380px;
             border: 1px solid #333;
+            position: relative;
         }
-        h2 {
-            color: #00ffcc;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
+        h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
+        
         input {
-            background: #111;
-            color: #00ffcc;
-            border: 1px solid #333;
-            padding: 12px;
-            margin: 10px 0 20px 0;
-            border-radius: 6px;
-            width: 80%;
-            font-family: inherit;
-            text-align: center;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
+            background: #111; color: #00ffcc; border: 1px solid #333;
+            padding: 12px; margin: 10px 0 20px 0; border-radius: 6px;
+            width: 80%; font-family: inherit; text-align: center;
+            font-size: 16px; outline: none; transition: all 0.3s ease;
         }
-        input:focus {
-            border-color: #00ffcc;
-            box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
-        }
-        .input-error {
-            border-color: #ff3366 !important;
-            box-shadow: 0 0 8px rgba(255, 51, 102, 0.3) !important;
-        }
+        input:focus { border-color: #00ffcc; box-shadow: 0 0 8px rgba(0, 255, 204, 0.3); }
+        .input-error { border-color: #ff3366 !important; box-shadow: 0 0 8px rgba(255, 51, 102, 0.3) !important; }
+        
         button {
-            background: transparent;
-            color: #00ffcc;
-            border: 1px solid #00ffcc;
-            padding: 12px 20px;
-            margin: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            width: 80%;
+            background: transparent; color: #00ffcc; border: 1px solid #00ffcc;
+            padding: 12px 20px; margin: 10px; border-radius: 6px;
+            cursor: pointer; font-size: 16px; font-weight: bold;
+            transition: all 0.3s ease; width: 80%;
         }
-        button:hover {
-            background: #00ffcc;
-            color: #0f0f11;
-            box-shadow: 0 0 10px #00ffcc;
-        }
-        #initScreen, #mainMenu, #roomArea {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #mainMenu, #roomArea {
-            display: none;
-        }
-        .key-display {
-            font-size: 32px;
-            color: #fff;
-            letter-spacing: 5px;
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-        .status {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-        .room-name-display {
-            color: #ffaa00;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        /* Participant List */
+        button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc; }
+        
+        #initScreen, #mainMenu, #roomArea { display: flex; flex-direction: column; align-items: center; }
+        #mainMenu, #roomArea { display: none; }
+        
+        .key-display { font-size: 32px; color: #fff; letter-spacing: 5px; margin: 10px 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+        .status { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 20px; }
+        .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        
+        /* Participant List & Kick Button */
         #participantList {
-            width: 90%;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            max-height: 150px;
-            overflow-y: auto;
-            text-align: left;
+            width: 90%; background: #111; border: 1px solid #333;
+            border-radius: 8px; padding: 10px; margin-top: 10px;
+            max-height: 180px; overflow-y: auto; text-align: left;
         }
         .participant-item {
-            color: #ffaa00;
-            font-size: 15px;
-            padding: 8px;
-            border-bottom: 1px solid #222;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
+            color: #00ffcc; font-size: 15px; padding: 10px;
+            border-bottom: 1px solid #222; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .participant-item:last-child {
-            border-bottom: none;
+        .participant-item:last-child { border-bottom: none; }
+        .kick-btn {
+            background: transparent; border: 1px solid #ff3366; color: #ff3366;
+            padding: 4px 8px; font-size: 12px; margin: 0; width: auto;
+            border-radius: 4px;
         }
+        .kick-btn:hover { background: #ff3366; color: #fff; box-shadow: 0 0 5px #ff3366; }
         
         /* Host Approval Notifications */
-        #notificationArea {
-            width: 90%;
-            margin-top: 15px;
-        }
+        #notificationArea { width: 90%; margin-top: 15px; }
         .join-request {
-            background: #222;
-            border: 1px solid #444;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 14px;
+            background: #222; border: 1px solid #444; padding: 15px;
+            border-radius: 8px; margin-bottom: 10px; font-size: 14px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .req-name {
-            color: #fff;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .btn-group {
-            display: flex;
-            justify-content: space-between;
-        }
-        .btn-approve, .btn-decline {
-            width: 45%;
-            padding: 8px;
-            font-size: 14px;
-            margin: 0;
-        }
+        .req-name { color: #fff; font-weight: bold; margin-bottom: 10px; }
+        .btn-group { display: flex; justify-content: space-between; }
+        .btn-approve, .btn-decline { width: 45%; padding: 8px; font-size: 14px; margin: 0; }
         .btn-approve { border-color: #00ffcc; color: #00ffcc; }
         .btn-approve:hover { background: #00ffcc; color: #000; }
         .btn-decline { border-color: #ff3366; color: #ff3366; }
         .btn-decline:hover { background: #ff3366; color: #fff; }
+
+        /* Custom Modal UI (Replaces default prompts) */
+        #customModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .custom-modal {
+            background: #1a1a1d; padding: 25px; border-radius: 12px;
+            border: 1px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            text-align: center; width: 300px;
+        }
+        .modal-text { color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
+        .modal-input {
+            width: 90%; padding: 10px; margin-bottom: 20px;
+            background: #111; border: 1px solid #444; color: #00ffcc;
+            border-radius: 4px; text-align: center; font-family: inherit; display: none;
+        }
+        .modal-btn-group { display: flex; justify-content: space-around; }
+        .modal-btn { width: 40%; padding: 10px; font-size: 14px; margin: 0; }
 
         #audioContainer { display: none; }
     </style>
 </head>
 <body>
 
+    <div id="customModalOverlay">
+        <div class="custom-modal">
+            <div class="modal-text" id="modalText">Message</div>
+            <input type="text" class="modal-input" id="modalInput" autocomplete="off">
+            <div class="modal-btn-group">
+                <button class="modal-btn" id="modalCancelBtn" style="border-color: #888; color: #888;">Cancel</button>
+                <button class="modal-btn" id="modalOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container" id="initScreen">
         <h2>SECURE GATEWAY</h2>
         <input type="text" id="userNameInput" placeholder="Enter your Name" autocomplete="off">
-        <button id="enableMicBtn">Initialize Comm</button>
+        <button id="enableMicBtn">Initialize Communication</button>
         <p id="errorMsg" style="color: #ff3366; font-size: 13px; display: none; margin-top: 15px; font-weight: bold;"></p>
     </div>
 
@@ -201,14 +162,16 @@
         let peer;
         let localStream;
         let myName = ""; 
-        let myRoomName = ""; // Only host uses this
+        let myRoomName = ""; 
         const secretPrefix = "phantom-squad-"; 
         
-        let maxLimit = 10; // Max allowed by default
+        let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
         let calls = {};       
+        let participantNames = {}; // Store real names
 
+        // DOM Elements
         const initScreen = document.getElementById('initScreen');
         const enableMicBtn = document.getElementById('enableMicBtn');
         const userNameInput = document.getElementById('userNameInput');
@@ -226,7 +189,46 @@
         const endBtn = document.getElementById('endBtn');
         const audioContainer = document.getElementById('audioContainer');
 
-        // --- STEP 1: AUTHENTICATION ---
+        // --- CUSTOM MODAL SYSTEM (Replaces Default Alerts/Prompts) ---
+        function showModal(type, text, placeholder = "") {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalText = document.getElementById('modalText');
+                const modalInput = document.getElementById('modalInput');
+                const okBtn = document.getElementById('modalOkBtn');
+                const cancelBtn = document.getElementById('modalCancelBtn');
+
+                modalText.innerText = text;
+                overlay.style.display = 'flex';
+                
+                // Reset states
+                modalInput.value = "";
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+
+                if (type === 'alert') {
+                    modalInput.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                    okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
+                } 
+                else if (type === 'confirm') {
+                    modalInput.style.display = 'none';
+                    cancelBtn.style.display = 'block';
+                    okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
+                    cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
+                } 
+                else if (type === 'prompt') {
+                    modalInput.style.display = 'block';
+                    modalInput.placeholder = placeholder;
+                    cancelBtn.style.display = 'block';
+                    modalInput.focus();
+                    okBtn.onclick = () => { overlay.style.display = 'none'; resolve(modalInput.value); };
+                    cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(null); };
+                }
+            });
+        }
+
+        // --- AUTHENTICATION ---
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
             if (enteredName === "") {
@@ -253,22 +255,39 @@
             }
         };
 
-        // --- NETWORK & UI FUNCTIONS ---
+        // --- UI & KICK FUNCTIONS ---
         function addParticipantUI(peerId, name) {
             if (document.getElementById('ui-' + peerId)) return;
             const emptyText = participantList.querySelector('div');
             if(emptyText && emptyText.innerText.includes('Waiting')) emptyText.remove();
 
+            participantNames[peerId] = name;
+
             const div = document.createElement('div');
             div.id = 'ui-' + peerId;
             div.className = 'participant-item';
-            div.innerText = "🎙️ " + name;
+            
+            // Name tag
+            const nameSpan = document.createElement('span');
+            nameSpan.innerText = "🎙️ " + name + (peerId === 'me' ? " (You)" : "");
+            div.appendChild(nameSpan);
+
+            // Add Kick Button ONLY if I am Host AND the peer is not me
+            if (isHost && peerId !== 'me') {
+                const kickBtn = document.createElement('button');
+                kickBtn.className = 'kick-btn';
+                kickBtn.innerText = 'Kick';
+                kickBtn.onclick = () => kickUser(peerId);
+                div.appendChild(kickBtn);
+            }
+
             participantList.appendChild(div);
         }
 
         function removeParticipantUI(peerId) {
             const div = document.getElementById('ui-' + peerId);
             if (div) div.remove();
+            delete participantNames[peerId];
             if (participantList.children.length === 0) {
                 participantList.innerHTML = '<div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>';
             }
@@ -291,19 +310,38 @@
             if (audio) audio.remove();
         }
 
-        // --- ACTIVE CONNECTION SETUP (Post-Approval) ---
+        // Host triggers this function
+        function kickUser(peerId) {
+            if (connections[peerId]) {
+                connections[peerId].send({ type: 'kicked' }); // Bhejo kick signal
+                setTimeout(() => removePeer(peerId), 500); // 0.5s baad connection kaat do
+            }
+        }
+
+        // --- ACTIVE CONNECTION SETUP ---
         function setupActiveConnection(conn) {
             connections[conn.peer] = conn;
             
-            // UI Update
-            addParticipantUI(conn.peer, conn.metadata ? conn.metadata.name : "Unknown");
-            statusText.innerText = "Connection Active 🟢";
-            statusText.style.color = "#00ffcc";
-
-            conn.on('data', (data) => {
-                if (data.type === 'hangup') removePeer(conn.peer);
+            conn.on('data', async (data) => {
+                if (data.type === 'name_broadcast') {
+                    addParticipantUI(conn.peer, data.name);
+                }
+                else if (data.type === 'hangup') {
+                    removePeer(conn.peer);
+                }
+                else if (data.type === 'kicked') {
+                    // Agar Host ne mujhe kick kar diya
+                    await showModal('alert', "⚠️ You have been KICKED by the Host.");
+                    location.reload();
+                }
             });
+
             conn.on('close', () => removePeer(conn.peer));
+
+            // Tell the new peer my real name
+            setTimeout(() => {
+                if (conn.open) conn.send({ type: 'name_broadcast', name: myName });
+            }, 1000);
         }
 
         function setupActiveCall(call) {
@@ -313,13 +351,13 @@
         }
 
         // --- HOST LOGIC ---
-        createBtn.onclick = () => {
-            // Get Room Details
-            const enteredRoomName = prompt("Enter Room Name:");
+        createBtn.onclick = async () => {
+            // Using Custom Prompts
+            const enteredRoomName = await showModal('prompt', "Enter Room Name:", "e.g. Secret Squad");
             if (!enteredRoomName || enteredRoomName.trim() === "") return;
             myRoomName = enteredRoomName.trim();
 
-            let inputLimit = prompt("Kitne logo ka room banana hai? (Max 10)", "4");
+            let inputLimit = await showModal('prompt', "Kitne logo ka room banana hai? (Max 10)", "4");
             if (inputLimit === null) return; 
             maxLimit = parseInt(inputLimit);
             if (isNaN(maxLimit) || maxLimit < 2 || maxLimit > 10) maxLimit = 10;
@@ -335,75 +373,61 @@
                 mainMenu.style.display = 'none';
                 roomArea.style.display = 'flex';
                 statusText.innerText = "Host Ready. Waiting for requests...";
-                addParticipantUI('me', myName + " (Host)");
+                addParticipantUI('me', myName); // Shows My real name
             });
 
-            // Listen for incoming Gatekeeper requests
             peer.on('connection', (conn) => {
                 conn.on('data', (data) => {
-                    // 1. Joiner is inquiring about room details
                     if (data.type === 'inquiry') {
                         conn.send({ type: 'room_details', hostName: myName, roomName: myRoomName });
                     }
-                    // 2. Joiner has confirmed and requested access
                     else if (data.type === 'request_access') {
                         if (Object.keys(connections).length + 1 >= maxLimit) {
                             conn.send({ type: 'decision', status: 'declined', reason: 'Room is Full!' });
                             return;
                         }
                         
-                        // Show Approval UI to Host
                         const reqDiv = document.createElement('div');
                         reqDiv.className = 'join-request';
                         reqDiv.id = 'req-' + conn.peer;
                         
                         reqDiv.innerHTML = `
-                            <div class="req-name">${data.joinerName} wants to join your room.</div>
+                            <div class="req-name">${data.joinerName} wants to join.</div>
                             <div class="btn-group">
                                 <button class="btn-approve">Approve</button>
                                 <button class="btn-decline">Decline</button>
                             </div>
                         `;
                         
-                        // Approve Logic
                         reqDiv.querySelector('.btn-approve').onclick = () => {
-                            conn.metadata = { name: data.joinerName };
-                            
-                            // Tell joiner they are approved and share active peers
                             conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
-                            
                             setupActiveConnection(conn);
+                            addParticipantUI(conn.peer, data.joinerName); // Add joiner name to Host screen
                             reqDiv.remove();
                         };
                         
-                        // Decline Logic
                         reqDiv.querySelector('.btn-decline').onclick = () => {
                             conn.send({ type: 'decision', status: 'declined', reason: 'Host declined your request.' });
                             reqDiv.remove();
                         };
                         
-                        // If joiner drops request while waiting
                         conn.on('close', () => { if(document.getElementById('req-' + conn.peer)) document.getElementById('req-' + conn.peer).remove(); });
-                        
                         notificationArea.appendChild(reqDiv);
                     }
                 });
             });
 
-            // Handle incoming voice calls (Only accept if connection is approved)
             peer.on('call', (call) => {
                 if (connections[call.peer]) {
                     call.answer(localStream);
                     setupActiveCall(call);
-                } else {
-                    call.close(); // Reject unauthorized calls
-                }
+                } else { call.close(); }
             });
         };
 
         // --- JOINER LOGIC ---
-        joinBtn.onclick = () => {
-            const roomKey = prompt("Enter the 4-digit Room Key:");
+        joinBtn.onclick = async () => {
+            const roomKey = await showModal('prompt', "Enter 4-digit Invite Key:", "----");
             
             if (roomKey && roomKey.length === 4) {
                 isHost = false;
@@ -413,17 +437,14 @@
                     const hostId = secretPrefix + roomKey;
                     statusText.innerText = "Fetching room data...";
                     
-                    // Create temporary handshake connection
                     const handshakeConn = peer.connect(hostId);
                     
-                    handshakeConn.on('open', () => {
-                        handshakeConn.send({ type: 'inquiry' });
-                    });
+                    handshakeConn.on('open', () => { handshakeConn.send({ type: 'inquiry' }); });
                     
-                    handshakeConn.on('data', (data) => {
-                        // 1. Received Room Details from Host
+                    handshakeConn.on('data', async (data) => {
                         if (data.type === 'room_details') {
-                            const wantsToJoin = confirm(`Kya aap "${data.hostName}" ka room "${data.roomName}" join karna chahte/chahti hai? \n\nYes/OK to Request Access.`);
+                            // Using Custom Confirm Modal
+                            const wantsToJoin = await showModal('confirm', `Kya aap "${data.hostName}" ka room "${data.roomName}" join karna chahte hai?`);
                             
                             if (wantsToJoin) {
                                 mainMenu.style.display = 'none';
@@ -438,58 +459,43 @@
                                 handshakeConn.close();
                             }
                         }
-                        
-                        // 2. Received Decision from Host
                         else if (data.type === 'decision') {
                             if (data.status === 'approved') {
-                                alert("You are approved in group by host ✅");
+                                await showModal('alert', "Access Granted ✅ You are in the room.");
                                 
-                                // Promote connection to Active
-                                handshakeConn.metadata = { name: "Host" }; // Temporary label for host
                                 setupActiveConnection(handshakeConn);
-                                addParticipantUI('host', "Host"); // Ensure host is in list
+                                addParticipantUI('me', myName); // Show my own name
                                 
-                                // Connect to other peers in room (Mesh routing)
                                 data.peers.forEach(peerId => {
                                     if(!connections[peerId]) {
                                         const newConn = peer.connect(peerId);
-                                        newConn.metadata = { name: "Member" };
                                         setupActiveConnection(newConn);
                                         const newCall = peer.call(peerId, localStream);
                                         setupActiveCall(newCall);
                                     }
                                 });
 
-                                // Call the Host
                                 const call = peer.call(hostId, localStream);
                                 setupActiveCall(call);
                                 
                             } else {
-                                alert("Request Denied: " + data.reason + " ❌");
+                                await showModal('alert', "Request Denied: " + data.reason + " ❌");
                                 location.reload();
                             }
                         }
                     });
 
-                    handshakeConn.on('error', () => {
-                        alert("Invalid Key or Host offline.");
+                    handshakeConn.on('error', async () => {
+                        await showModal('alert', "Invalid Key or Host is offline.");
                         location.reload();
                     });
                 });
                 
-                // Secondary listener for mesh network (when other users connect to me)
-                peer.on('connection', (conn) => {
-                    // Note: As a joiner, I accept connections from other approved members
-                    conn.metadata = { name: "Member" };
-                    setupActiveConnection(conn);
-                });
-                peer.on('call', (call) => {
-                    call.answer(localStream);
-                    setupActiveCall(call);
-                });
+                peer.on('connection', (conn) => { setupActiveConnection(conn); });
+                peer.on('call', (call) => { call.answer(localStream); setupActiveCall(call); });
                 
             } else {
-                alert("Please enter a valid 4-digit key.");
+                if (roomKey !== null) await showModal('alert', "Please enter a valid 4-digit key.");
             }
         };
 
