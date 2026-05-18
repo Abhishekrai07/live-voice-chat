@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom Voice Room</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            background-color: #0f0f11;
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background: #1a1a1d;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
+            text-align: center;
+            width: 320px;
+            border: 1px solid #333;
+        }
+        h2 {
+            color: #00ffcc;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: transparent;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            padding: 12px 20px;
+            margin: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 80%;
+        }
+        button:hover {
+            background: #00ffcc;
+            color: #0f0f11;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+        /* Special style for the startup screen */
+        #initScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #mainMenu, #roomArea {
+            display: none;
+        }
+        .key-display {
+            font-size: 32px;
+            color: #fff;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        .status {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="initScreen">
+        <h2>SECURE COMMS</h2>
+        <p style="font-size: 14px; color: #888; margin-bottom: 20px;">Tap below to initialize microphone.</p>
+        <button id="enableMicBtn">Enable Mic & Enter</button>
+        <p id="errorMsg" style="color: #ff3366; font-size: 12px; display: none; margin-top: 15px;"></p>
+    </div>
+
+    <div class="container" id="mainMenu">
+        <h2>VOICE ROOM</h2>
+        <p style="color: #00ffcc; font-size: 12px; margin-top: -15px;">Mic Ready ✅</p>
+        <button id="createBtn">Create Room</button>
+        <button id="joinBtn">Join Room</button>
+    </div>
+
+    <div class="container" id="roomArea">
+        <h2>LIVE CONNECTION</h2>
+        <p>Room Key:</p>
+        <div class="key-display" id="roomIdDisplay">----</div>
+        <p class="status" id="statusText">Waiting for connection...</p>
+        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 20px;">End Call</button>
+    </div>
+
+    <audio id="remoteAudio" autoplay></audio>
+
+    <script>
+        let peer;
+        let localStream;
+        const secretPrefix = "phantom-call-"; 
+
+        const initScreen = document.getElementById('initScreen');
+        const enableMicBtn = document.getElementById('enableMicBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        const mainMenu = document.getElementById('mainMenu');
+        const createBtn = document.getElementById('createBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        
+        const roomArea = document.getElementById('roomArea');
+        const roomIdDisplay = document.getElementById('roomIdDisplay');
+        const statusText = document.getElementById('statusText');
+        const endBtn = document.getElementById('endBtn');
+        const remoteAudio = document.getElementById('remoteAudio');
+
+        // --- STEP 1: ENABLE MIC ON BUTTON TAP (Fix for Mobile) ---
+        enableMicBtn.onclick = async () => {
+            enableMicBtn.innerText = "Requesting...";
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // If success, hide start screen and show Main Menu
+                initScreen.style.display = 'none';
+                mainMenu.style.display = 'block';
+            } catch (error) {
+                enableMicBtn.innerText = "Enable Mic & Enter";
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "Error: Mic access denied. Agar aap mobile par hain, to is file ko https:// server par host karna padega.";
+            }
+        };
+
+        // --- STEP 2: CREATE ROOM ---
+        createBtn.onclick = () => {
+            const roomKey = Math.floor(1000 + Math.random() * 9000).toString();
+            roomIdDisplay.innerText = roomKey;
+
+            peer = new Peer(secretPrefix + roomKey);
+
+            peer.on('open', (id) => {
+                mainMenu.style.display = 'none';
+                roomArea.style.display = 'block';
+                statusText.innerText = "Waiting for your friend to join...";
+            });
+
+            peer.on('call', (call) => {
+                call.answer(localStream);
+                statusText.innerText = "Connected! Start talking. 🎙️";
+                statusText.style.color = "#00ffcc";
+                
+                call.on('stream', (remoteStream) => {
+                    remoteAudio.srcObject = remoteStream;
+                });
+            });
+        };
+
+        // --- STEP 3: JOIN ROOM ---
+        joinBtn.onclick = () => {
+            const roomKey = prompt("Enter the 4-digit Room Key:");
+            
+            if (roomKey && roomKey.length === 4) {
+                peer = new Peer(); 
+
+                peer.on('open', (id) => {
+                    mainMenu.style.display = 'none';
+                    roomArea.style.display = 'block';
+                    roomIdDisplay.innerText = roomKey;
+                    statusText.innerText = "Connecting to room...";
+
+                    const call = peer.call(secretPrefix + roomKey, localStream);
+
+                    call.on('stream', (remoteStream) => {
+                        statusText.innerText = "Connected! Start talking. 🎙️";
+                        statusText.style.color = "#00ffcc";
+                        remoteAudio.srcObject = remoteStream;
+                    });
+
+                    call.on('error', () => {
+                        statusText.innerText = "Connection failed. Wrong key?";
+                        statusText.style.color = "#ff3366";
+                    });
+                });
+            } else {
+                alert("Please enter a valid 4-digit key.");
+            }
+        };
+
+        // --- STEP 4: END CALL ---
+        endBtn.onclick = () => {
+            if (peer) peer.destroy(); 
+            if (localStream) localStream.getTracks().forEach(track => track.stop()); 
+            location.reload(); 
+        };
+    </script>
+</body>
+</html>
