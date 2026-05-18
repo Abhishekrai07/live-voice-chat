@@ -6,112 +6,113 @@
     <title>Phantom Secure Voice Room</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* --- GLOBAL STYLES --- */
         body {
-            background-color: #0f0f11; color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; margin: 0; flex-direction: column; padding: 15px; box-sizing: border-box;
+            background-color: #0f0f11; color: #e0e0e0; font-family: 'Courier New', Courier, monospace;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box;
         }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #111; }
+
         .container {
-            background: #1a1a1d; padding: 25px; border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.1); text-align: center;
-            width: 100%; max-width: 400px; border: 1px solid #333; position: relative;
+            background: #1a1a1d; padding: 25px; border-radius: 12px; box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
+            text-align: center; width: 100%; max-width: 400px; border: 1px solid #333; position: relative; transition: all 0.3s ease;
         }
+        
+        /* Expand container for room layout */
+        .container.room-active { max-width: 900px; padding: 20px; }
+        
         h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
         
         input {
-            background: #111; color: #00ffcc; border: 1px solid #333;
-            padding: 12px; margin: 10px 0 20px 0; border-radius: 6px;
-            width: 85%; font-family: inherit; text-align: center;
-            font-size: 16px; outline: none; transition: all 0.3s ease;
+            background: #111; color: #00ffcc; border: 1px solid #333; padding: 12px; margin: 10px 0; border-radius: 6px;
+            width: 85%; font-family: inherit; text-align: center; font-size: 16px; outline: none; transition: all 0.3s ease; box-sizing: border-box;
         }
         input:focus { border-color: #00ffcc; box-shadow: 0 0 8px rgba(0, 255, 204, 0.3); }
         .input-error { border-color: #ff3366 !important; box-shadow: 0 0 8px rgba(255, 51, 102, 0.3) !important; }
         
         button {
-            background: transparent; color: #00ffcc; border: 1px solid #00ffcc;
-            padding: 12px 20px; margin: 10px; border-radius: 6px;
-            cursor: pointer; font-size: 16px; font-weight: bold;
-            transition: all 0.3s ease; width: 85%;
+            background: transparent; color: #00ffcc; border: 1px solid #00ffcc; padding: 12px 20px; margin: 10px; border-radius: 6px;
+            cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; width: 85%; box-sizing: border-box;
         }
         button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc; }
         
-        #initScreen, #mainMenu, #roomArea { display: flex; flex-direction: column; align-items: center; }
+        #initScreen, #mainMenu { display: flex; flex-direction: column; align-items: center; }
         #mainMenu, #roomArea { display: none; }
         
-        .key-display { font-size: 32px; color: #fff; letter-spacing: 5px; margin: 10px 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-        .status { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 20px; font-weight: bold; }
-        .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
-        
-        /* Participant List & Dynamic Icons */
+        .key-display { font-size: 32px; color: #fff; letter-spacing: 5px; margin: 5px 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+        .status { font-size: 14px; color: #aaa; margin-top: 5px; margin-bottom: 15px; font-weight: bold; }
+        .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+
+        /* --- RESPONSIVE ROOM LAYOUT --- */
+        .room-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; }
+        .left-panel { flex: 1.5; min-width: 300px; display: flex; flex-direction: column; align-items: center; }
+        .right-panel { flex: 1; min-width: 300px; display: flex; flex-direction: column; background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; height: 500px; }
+
+        /* --- PARTICIPANTS & VISUALIZER --- */
         #participantList {
-            width: 95%; background: #111; border: 1px solid #333;
-            border-radius: 8px; padding: 10px; margin-top: 10px;
-            max-height: 200px; overflow-y: auto; text-align: left;
+            width: 100%; background: #111; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-top: 10px;
+            max-height: 250px; overflow-y: auto; text-align: left; box-sizing: border-box;
         }
         .participant-item {
-            color: #00ffcc; font-size: 14px; padding: 10px;
-            border-bottom: 1px solid #222; font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 8px; /* Fixed for mobile view */
+            color: #00ffcc; font-size: 14px; padding: 10px; border-bottom: 1px solid #222; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
         }
         .participant-item:last-child { border-bottom: none; }
-        
-        .participant-info { display: flex; align-items: center; gap: 8px; }
+        .participant-info { display: flex; align-items: center; gap: 8px; flex: 1; }
         .status-icon { font-size: 16px; width: 20px; text-align: center; display: inline-block; }
-        
-        /* Host Action Buttons */
-        .host-action-group { display: flex; gap: 5px; flex-wrap: wrap; }
-        .host-action-btn {
-            background: transparent; border: 1px solid; padding: 6px 10px; font-size: 12px; 
-            margin: 0; border-radius: 4px; cursor: pointer; flex-grow: 1;
-        }
+        canvas.visualizer { width: 40px; height: 15px; background: transparent; border-radius: 2px; }
+
+        /* --- HOST CONTROLS & LOBBY --- */
+        .host-action-group { display: flex; gap: 5px; }
+        .host-action-btn { background: transparent; border: 1px solid; padding: 6px 10px; font-size: 12px; margin: 0; border-radius: 4px; cursor: pointer; }
         .btn-mute-remote { border-color: #ffaa00; color: #ffaa00; }
-        .btn-mute-remote:hover { background: #ffaa00; color: #000; box-shadow: 0 0 5px #ffaa00; }
+        .btn-mute-remote:hover { background: #ffaa00; color: #000; }
         .btn-kick-remote { border-color: #ff3366; color: #ff3366; }
-        .btn-kick-remote:hover { background: #ff3366; color: #fff; box-shadow: 0 0 5px #ff3366; }
+        .btn-kick-remote:hover { background: #ff3366; color: #fff; }
+
+        #lobbyArea { width: 100%; margin-top: 15px; display: none; background: #1a1a1d; border: 1px dashed #ffaa00; border-radius: 8px; padding: 10px; box-sizing: border-box; }
+        .lobby-title { color: #ffaa00; font-size: 14px; margin: 0 0 10px 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .lobby-req { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
+        .lobby-req:last-child { border-bottom: none; }
+        .lobby-btns { display: flex; gap: 5px; }
+        .btn-admit { border: 1px solid #00ffcc; color: #00ffcc; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
+        .btn-admit:hover { background: #00ffcc; color: #000; }
+        .btn-deny { border: 1px solid #ff3366; color: #ff3366; background: transparent; padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; }
+        .btn-deny:hover { background: #ff3366; color: #fff; }
+
+        /* --- SECRET CHAT UI --- */
+        .chat-header { color: #ffaa00; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; text-align: left; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
+        .chat-input-area { display: flex; gap: 10px; margin-top: 10px; }
+        .chat-input-area input { margin: 0; width: 100%; text-align: left; padding: 10px; font-size: 14px; }
+        .chat-input-area button { margin: 0; width: 80px; padding: 10px; font-size: 14px; }
         
-        /* Personal Controls */
-        .controls-row { display: flex; justify-content: space-between; width: 95%; margin-top: 15px; }
-        .control-btn { width: 48%; margin: 0; padding: 10px; font-size: 14px; }
+        .chat-msg { background: #222; padding: 10px; border-radius: 6px; font-size: 13px; text-align: left; position: relative; overflow: hidden; animation: fadeIn 0.3s ease; }
+        .chat-msg .sender { color: #00ffcc; font-weight: bold; margin-bottom: 3px; font-size: 12px; }
+        .chat-msg .text { color: #ddd; word-break: break-word; }
+        /* 30s Disappearing Animation line */
+        .chat-msg::after { content: ''; position: absolute; bottom: 0; left: 0; height: 2px; background: #ff3366; width: 100%; animation: drain 30s linear forwards; }
+        @keyframes drain { from { width: 100%; } to { width: 0%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CONTROLS --- */
+        .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 10px; }
+        .control-btn { width: 100%; margin: 0; padding: 12px; font-size: 14px; }
         .btn-raise { border-color: #ffaa00; color: #ffaa00; }
         .btn-raise:hover { background: #ffaa00; color: #000; }
 
-        /* Request Notifications */
-        #notificationArea { width: 95%; margin-top: 15px; }
-        .join-request {
-            background: #222; border: 1px solid #444; padding: 15px;
-            border-radius: 8px; margin-bottom: 10px; font-size: 14px;
-        }
-        .req-name { color: #fff; font-weight: bold; margin-bottom: 10px; }
-        .btn-group { display: flex; justify-content: space-between; }
-        .btn-approve { width: 45%; border-color: #00ffcc; color: #00ffcc; padding: 8px; margin:0;}
-        .btn-decline { width: 45%; border-color: #ff3366; color: #ff3366; padding: 8px; margin:0;}
-
-        /* Modals & Toasts */
-        #customModalOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: none;
-            justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);
-        }
-        .custom-modal {
-            background: #1a1a1d; padding: 25px; border-radius: 12px;
-            border: 1px solid #00ffcc; text-align: center; width: 300px;
-        }
+        /* --- MODALS & TOASTS --- */
+        #customModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .custom-modal { background: #1a1a1d; padding: 25px; border-radius: 12px; border: 1px solid #00ffcc; text-align: center; width: 300px; }
         .modal-text { color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
         .modal-input { width: 90%; padding: 10px; margin-bottom: 20px; background: #111; color: #00ffcc; display: none; }
         .modal-btn-group { display: flex; justify-content: space-around; }
         .modal-btn { width: 40%; padding: 10px; font-size: 14px; margin: 0; }
 
-        #toastContainer {
-            position: fixed; top: 20px; right: 20px; z-index: 2000;
-            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
-        }
-        .toast {
-            background: rgba(26, 26, 29, 0.95); border-left: 4px solid #00ffcc;
-            color: #fff; padding: 12px 20px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.5); font-size: 14px;
-            animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 3.7s forwards;
-        }
+        #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(26, 26, 29, 0.95); border-left: 4px solid #00ffcc; color: #fff; padding: 12px 20px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.5); font-size: 14px; animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 3.7s forwards; }
         @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
@@ -149,22 +150,37 @@
 
     <div class="container" id="roomArea">
         <div class="room-name-display" id="roomNameDisplay">ROOM: -----</div>
-        <p style="margin: 5px 0; font-size: 14px;">Invite Key:</p>
+        <p style="margin: 5px 0; font-size: 14px; color: #888;">Invite Key:</p>
         <div class="key-display" id="roomIdDisplay">----</div>
         <p class="status" id="statusText">System initialized...</p>
         
-        <div id="notificationArea"></div>
-        
-        <div id="participantList">
-            <div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>
-        </div>
+        <div class="room-layout">
+            <div class="left-panel">
+                <div id="participantList">
+                    <div style="color: #555; text-align: center; font-size: 13px; padding: 10px;">Waiting for connections...</div>
+                </div>
 
-        <div class="controls-row">
-            <button class="control-btn" id="muteBtn">Mute 🎙️</button>
-            <button class="control-btn btn-raise" id="raiseHandBtn">Raise Hand ✋</button>
-        </div>
+                <div id="lobbyArea">
+                    <h3 class="lobby-title">Waiting Lobby ⏳</h3>
+                    <div id="lobbyList"></div>
+                </div>
 
-        <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 95%;">End & Leave</button>
+                <div class="controls-row">
+                    <button class="control-btn" id="muteBtn">Mute 🎙️</button>
+                    <button class="control-btn btn-raise" id="raiseHandBtn">Raise Hand ✋</button>
+                </div>
+                <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 15px; width: 100%;">End & Leave</button>
+            </div>
+
+            <div class="right-panel">
+                <div class="chat-header">Secret Chat (30s) 💬</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Message..." autocomplete="off">
+                    <button id="sendChatBtn">Send</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="audioContainer"></div>
@@ -172,19 +188,23 @@
     <script>
         let peer;
         let localStream;
+        let audioCtx; // For Visualizer
         let myName = ""; 
         let myRoomName = ""; 
         let isMuted = false;
         
         let handRaiseTimer = null;
-        let globalMuteStates = {}; // Sabke mute status ka record
+        let globalMuteStates = {}; 
+        let pendingRequests = {}; // Host Lobby
 
-        const secretPrefix = "phantom-squad-"; 
+        const secretPrefix = "phantom-squad-v3-"; 
         let maxLimit = 10; 
         let isHost = false;
         let connections = {}; 
         let calls = {};       
+        let visualizerFrames = {}; // Store requestAnimationFrames to cancel them
 
+        // DOM Elements
         const initScreen = document.getElementById('initScreen');
         const enableMicBtn = document.getElementById('enableMicBtn');
         const userNameInput = document.getElementById('userNameInput');
@@ -194,18 +214,25 @@
         const createBtn = document.getElementById('createBtn');
         const joinBtn = document.getElementById('joinBtn');
         const roomArea = document.getElementById('roomArea');
+        const roomContainer = document.querySelector('.container');
         const roomNameDisplay = document.getElementById('roomNameDisplay');
         const roomIdDisplay = document.getElementById('roomIdDisplay');
         const statusText = document.getElementById('statusText');
-        const notificationArea = document.getElementById('notificationArea');
         const participantList = document.getElementById('participantList');
+        const lobbyArea = document.getElementById('lobbyArea');
+        const lobbyList = document.getElementById('lobbyList');
         
         const muteBtn = document.getElementById('muteBtn');
         const raiseHandBtn = document.getElementById('raiseHandBtn');
         const endBtn = document.getElementById('endBtn');
         const audioContainer = document.getElementById('audioContainer');
         const toastContainer = document.getElementById('toastContainer');
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
 
+        // --- UTILS (Toasts & Modals) ---
         function showToast(message, isWarning = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -230,13 +257,11 @@
                 if (type === 'alert') {
                     modalInput.style.display = 'none'; cancelBtn.style.display = 'none';
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
-                } 
-                else if (type === 'confirm') {
+                } else if (type === 'confirm') {
                     modalInput.style.display = 'none'; cancelBtn.style.display = 'block';
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(true); };
                     cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
-                } 
-                else if (type === 'prompt') {
+                } else if (type === 'prompt') {
                     modalInput.style.display = 'block'; modalInput.placeholder = placeholder; cancelBtn.style.display = 'block';
                     modalInput.focus();
                     okBtn.onclick = () => { overlay.style.display = 'none'; resolve(modalInput.value); };
@@ -245,6 +270,51 @@
             });
         }
 
+        // --- VISUALIZER LOGIC ---
+        function attachVisualizer(stream, canvasId) {
+            if (!audioCtx) return;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            try {
+                // Handle different browser audio contexts for remote streams
+                const src = audioCtx.createMediaStreamSource(stream);
+                const analyser = audioCtx.createAnalyser();
+                src.connect(analyser);
+                analyser.fftSize = 64;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                const ctx = canvas.getContext('2d');
+
+                function draw() {
+                    visualizerFrames[canvasId] = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#00ffcc';
+                    
+                    let barWidth = (canvas.width / bufferLength) * 2;
+                    let x = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        let barHeight = (dataArray[i] / 255) * canvas.height;
+                        if(barHeight < 1) barHeight = 1; // Minimum height
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                        x += barWidth + 1;
+                    }
+                }
+                draw();
+            } catch (e) {
+                console.log("Visualizer not supported for this stream", e);
+            }
+        }
+
+        function stopVisualizer(canvasId) {
+            if (visualizerFrames[canvasId]) {
+                cancelAnimationFrame(visualizerFrames[canvasId]);
+                delete visualizerFrames[canvasId];
+            }
+        }
+
+        // --- AUTHENTICATION ---
         enableMicBtn.onclick = async () => {
             const enteredName = userNameInput.value.trim();
             if (enteredName === "") {
@@ -257,6 +327,9 @@
             
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Initialize Audio Context for Visualizer after user gesture
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
                 initScreen.style.display = 'none'; mainMenu.style.display = 'flex';
                 welcomeUserText.innerText = "Logged in as: " + myName; 
             } catch (error) {
@@ -265,18 +338,39 @@
             }
         };
 
-        // --- GLOBAL SYNC UI UPDATER ---
+        // --- SECRET CHAT LOGIC ---
+        function renderChatMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg';
+            msgDiv.innerHTML = `<div class="sender">${sender}</div><div class="text">${text}</div>`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Self-Destruct in 30 seconds
+            setTimeout(() => {
+                msgDiv.style.opacity = '0';
+                setTimeout(() => msgDiv.remove(), 300);
+            }, 30000);
+        }
+
+        sendChatBtn.onclick = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            renderChatMessage(myName + " (You)", text);
+            Object.values(connections).forEach(conn => {
+                if (conn.open) conn.send({ type: 'chat', sender: myName, text: text });
+            });
+            chatInput.value = '';
+        };
+        chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatBtn.click(); });
+
+        // --- GLOBAL SYNC UI ---
         function setPeerIcon(peerId, state) {
             const iconSpan = document.getElementById('icon-' + peerId);
             if (!iconSpan) return;
-            
-            if (state === 'hand') {
-                iconSpan.innerText = '✋';
-            } else if (state === 'muted') {
-                iconSpan.innerText = '🔇';
-            } else {
-                iconSpan.innerText = '🎙️';
-            }
+            if (state === 'hand') iconSpan.innerText = '✋';
+            else if (state === 'muted') iconSpan.innerText = '🔇';
+            else iconSpan.innerText = '🎙️';
         }
 
         // --- PERSONAL CONTROLS ---
@@ -288,11 +382,9 @@
             muteBtn.style.color = isMuted ? "#ff3366" : "#00ffcc";
             muteBtn.style.borderColor = isMuted ? "#ff3366" : "#00ffcc";
 
-            // Update my own UI instantly
             setPeerIcon('me', isMuted ? 'muted' : 'unmuted');
             globalMuteStates['me'] = isMuted;
 
-            // Broadcast state to everyone
             Object.values(connections).forEach(conn => {
                 if(conn.open) conn.send({ type: 'sync_mute', state: isMuted });
             });
@@ -302,12 +394,8 @@
         raiseHandBtn.onclick = () => {
             showToast("✋ You raised your hand");
             setPeerIcon('me', 'hand');
-            
-            // Revert back to mute status after 5s
             clearTimeout(handRaiseTimer);
-            handRaiseTimer = setTimeout(() => {
-                setPeerIcon('me', globalMuteStates['me'] ? 'muted' : 'unmuted');
-            }, 5000);
+            handRaiseTimer = setTimeout(() => { setPeerIcon('me', globalMuteStates['me'] ? 'muted' : 'unmuted'); }, 5000);
 
             Object.values(connections).forEach(conn => {
                 if(conn.open) conn.send({ type: 'raise_hand', name: myName });
@@ -315,7 +403,7 @@
         };
 
         // --- UI & HOST FUNCTIONS ---
-        function addParticipantUI(peerId, name, isCurrentlyMuted = false) {
+        function addParticipantUI(peerId, name, isCurrentlyMuted = false, stream = null) {
             if (document.getElementById('ui-' + peerId)) return;
             const emptyText = participantList.querySelector('div');
             if(emptyText && emptyText.innerText.includes('Waiting')) emptyText.remove();
@@ -326,7 +414,6 @@
             div.id = 'ui-' + peerId;
             div.className = 'participant-item';
             
-            // Name Info Section
             const infoDiv = document.createElement('div');
             infoDiv.className = 'participant-info';
             
@@ -338,11 +425,16 @@
             const nameSpan = document.createElement('span');
             nameSpan.innerText = name + (peerId === 'me' ? " (You)" : "");
             
+            const canvasId = 'vis-' + peerId;
+            const visCanvas = document.createElement('canvas');
+            visCanvas.id = canvasId;
+            visCanvas.className = 'visualizer';
+            
             infoDiv.appendChild(iconSpan);
             infoDiv.appendChild(nameSpan);
+            infoDiv.appendChild(visCanvas);
             div.appendChild(infoDiv);
 
-            // Add Actions for Host (Mobile Friendly Flex Wrap)
             if (isHost && peerId !== 'me') {
                 const actionGroup = document.createElement('div');
                 actionGroup.className = 'host-action-group';
@@ -364,9 +456,15 @@
                 div.appendChild(actionGroup);
             }
             participantList.appendChild(div);
+
+            // Attach visualizer
+            if(stream) {
+                setTimeout(() => attachVisualizer(stream, canvasId), 500);
+            }
         }
 
         function removeParticipantUI(peerId) {
+            stopVisualizer('vis-' + peerId);
             const div = document.getElementById('ui-' + peerId);
             if (div) div.remove();
             delete globalMuteStates[peerId];
@@ -380,6 +478,11 @@
             const audio = document.createElement('audio');
             audio.id = 'audio-' + peerId; audio.srcObject = stream; audio.autoplay = true;
             audioContainer.appendChild(audio);
+            
+            // Re-attach visualizer once stream arrives
+            if(document.getElementById('vis-' + peerId)){
+                attachVisualizer(stream, 'vis-' + peerId);
+            }
         }
 
         function removePeer(peerId) {
@@ -393,11 +496,7 @@
         function hostToggleMute(peerId, btn) {
             const isCurrentlyMuted = btn.innerText === 'Unmute';
             const action = isCurrentlyMuted ? 'unmute' : 'mute';
-            if (connections[peerId]) {
-                connections[peerId].send({ type: 'host_control', action: action });
-                // We don't change button UI here directly anymore.
-                // It will change when we receive the 'sync_mute' from the user confirming they muted.
-            }
+            if (connections[peerId]) connections[peerId].send({ type: 'host_control', action: action });
         }
 
         function kickUser(peerId) {
@@ -407,14 +506,62 @@
             }
         }
 
+        // --- LOBBY LOGIC (Host) ---
+        function renderLobby() {
+            lobbyList.innerHTML = "";
+            const keys = Object.keys(pendingRequests);
+            if (keys.length === 0) {
+                lobbyArea.style.display = 'none';
+                return;
+            }
+            lobbyArea.style.display = 'block';
+            
+            keys.forEach(peerId => {
+                const req = pendingRequests[peerId];
+                const div = document.createElement('div');
+                div.className = 'lobby-req';
+                div.innerHTML = `<span>${req.name}</span>
+                <div class="lobby-btns">
+                    <button class="btn-admit" onclick="admitFromLobby('${peerId}')">Admit</button>
+                    <button class="btn-deny" onclick="denyFromLobby('${peerId}')">Deny</button>
+                </div>`;
+                lobbyList.appendChild(div);
+            });
+        }
+
+        window.admitFromLobby = function(peerId) {
+            const conn = pendingRequests[peerId].conn;
+            if (Object.keys(connections).length + 1 >= maxLimit) {
+                showToast("Room is full! Kick someone first.", true);
+                return;
+            }
+            conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
+            setupActiveConnection(conn);
+            delete pendingRequests[peerId];
+            renderLobby();
+        };
+
+        window.denyFromLobby = function(peerId) {
+            const conn = pendingRequests[peerId].conn;
+            conn.send({ type: 'decision', status: 'declined', reason: 'Host denied access.' });
+            delete pendingRequests[peerId];
+            renderLobby();
+        };
+
         // --- ACTIVE CONNECTION SETUP ---
         function setupActiveConnection(conn) {
             connections[conn.peer] = conn;
             
             conn.on('data', async (data) => {
                 if (data.type === 'name_broadcast') {
-                    // Include their current mute state when they join
-                    addParticipantUI(conn.peer, data.name, data.isMuted);
+                    // Try to attach visualizer if audio already exists
+                    let stream = null;
+                    const audioEl = document.getElementById('audio-' + conn.peer);
+                    if(audioEl && audioEl.srcObject) stream = audioEl.srcObject;
+                    addParticipantUI(conn.peer, data.name, data.isMuted, stream);
+                }
+                else if (data.type === 'chat') {
+                    renderChatMessage(data.sender, data.text);
                 }
                 else if (data.type === 'hangup') { removePeer(conn.peer); }
                 else if (data.type === 'kicked') {
@@ -430,10 +577,10 @@
                 }
                 else if (data.type === 'host_control') {
                     if (data.action === 'mute') {
-                        toggleSelfMute(true); 
+                        toggleSelfMute(true); // Force Mute
                         showToast("⚠️ You were muted by Host", true);
                     } else if (data.action === 'unmute') {
-                        toggleSelfMute(false); 
+                        toggleSelfMute(false); // Force Unmute
                         showToast("✅ Host unmuted you");
                     }
                 }
@@ -446,7 +593,6 @@
                         if (hBtn) {
                             hBtn.innerText = data.state ? 'Unmute' : 'Mute';
                             hBtn.style.color = data.state ? '#ff3366' : '#ffaa00';
-                            hBtn.style.borderColor = data.state ? '#ff3366' : '#ffaa00';
                         }
                     }
                 }
@@ -470,7 +616,7 @@
             if (!enteredRoomName || enteredRoomName.trim() === "") return;
             myRoomName = enteredRoomName.trim();
 
-            let inputLimit = await showModal('prompt', "Kitne logo ka room banana hai? (Max 10)", "4");
+            let inputLimit = await showModal('prompt', "Max Capacity? (2 to 10)", "4");
             if (inputLimit === null) return; 
             maxLimit = parseInt(inputLimit);
             if (isNaN(maxLimit) || maxLimit < 2 || maxLimit > 10) maxLimit = 10;
@@ -483,10 +629,10 @@
             peer = new Peer(secretPrefix + roomKey);
 
             peer.on('open', (id) => {
-                mainMenu.style.display = 'none';
-                roomArea.style.display = 'flex';
-                statusText.innerText = "Host Ready. Waiting for requests...";
-                addParticipantUI('me', myName, isMuted); 
+                mainMenu.style.display = 'none'; roomArea.style.display = 'block';
+                roomContainer.classList.add('room-active');
+                statusText.innerText = `Host Ready. Capacity: ${maxLimit}`;
+                addParticipantUI('me', myName, isMuted, localStream); 
             });
 
             peer.on('connection', (conn) => {
@@ -495,37 +641,14 @@
                         conn.send({ type: 'room_details', hostName: myName, roomName: myRoomName });
                     }
                     else if (data.type === 'request_access') {
-                        if (Object.keys(connections).length + 1 >= maxLimit) {
-                            conn.send({ type: 'decision', status: 'declined', reason: 'Room is Full!' });
-                            return;
-                        }
+                        // Put in Lobby
+                        pendingRequests[conn.peer] = { name: data.joinerName, conn: conn };
+                        renderLobby();
+                        showToast(`⏳ ${data.joinerName} is waiting in the Lobby.`);
                         
-                        const reqDiv = document.createElement('div');
-                        reqDiv.className = 'join-request';
-                        reqDiv.id = 'req-' + conn.peer;
-                        
-                        reqDiv.innerHTML = `
-                            <div class="req-name">${data.joinerName} wants to join.</div>
-                            <div class="btn-group">
-                                <button class="btn-approve">Approve</button>
-                                <button class="btn-decline">Decline</button>
-                            </div>
-                        `;
-                        
-                        reqDiv.querySelector('.btn-approve').onclick = () => {
-                            conn.send({ type: 'decision', status: 'approved', peers: Object.keys(connections) });
-                            setupActiveConnection(conn);
-                            // Joiner UI will be added when they broadcast their name
-                            reqDiv.remove();
-                        };
-                        
-                        reqDiv.querySelector('.btn-decline').onclick = () => {
-                            conn.send({ type: 'decision', status: 'declined', reason: 'Host declined your request.' });
-                            reqDiv.remove();
-                        };
-                        
-                        conn.on('close', () => { if(document.getElementById('req-' + conn.peer)) document.getElementById('req-' + conn.peer).remove(); });
-                        notificationArea.appendChild(reqDiv);
+                        conn.on('close', () => { 
+                            delete pendingRequests[conn.peer]; renderLobby(); 
+                        });
                     }
                 });
             });
@@ -552,12 +675,13 @@
                     
                     handshakeConn.on('data', async (data) => {
                         if (data.type === 'room_details') {
-                            const wantsToJoin = await showModal('confirm', `Kya aap "${data.hostName}" ka room "${data.roomName}" join karna chahte hai?`);
+                            const wantsToJoin = await showModal('confirm', `Join "${data.hostName}"'s room "${data.roomName}"?`);
                             if (wantsToJoin) {
-                                mainMenu.style.display = 'none'; roomArea.style.display = 'flex';
+                                mainMenu.style.display = 'none'; roomArea.style.display = 'block';
+                                roomContainer.classList.add('room-active');
                                 roomNameDisplay.innerText = "ROOM: " + data.roomName;
                                 roomIdDisplay.innerText = roomKey;
-                                statusText.innerText = "Waiting for Host Approval... ⏳";
+                                statusText.innerText = "Waiting in Lobby... ⏳";
                                 statusText.style.color = "#ffaa00";
                                 handshakeConn.send({ type: 'request_access', joinerName: myName });
                             } else { handshakeConn.close(); }
@@ -566,11 +690,10 @@
                             if (data.status === 'approved') {
                                 statusText.innerText = "Connection Active 🟢";
                                 statusText.style.color = "#00ffcc";
-
-                                await showModal('alert', "Access Granted ✅ You are in the room.");
+                                await showModal('alert', "Access Granted ✅");
                                 
                                 setupActiveConnection(handshakeConn);
-                                addParticipantUI('me', myName, isMuted); 
+                                addParticipantUI('me', myName, isMuted, localStream); 
                                 
                                 data.peers.forEach(peerId => {
                                     if(!connections[peerId]) {
@@ -588,7 +711,7 @@
                     });
 
                     handshakeConn.on('error', async () => {
-                        await showModal('alert', "Invalid Key or Host is offline.");
+                        await showModal('alert', "Invalid Key or Host offline.");
                         location.reload();
                     });
                 });
