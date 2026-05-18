@@ -31,6 +31,24 @@
             letter-spacing: 2px;
             margin-bottom: 20px;
         }
+        input {
+            background: #111;
+            color: #00ffcc;
+            border: 1px solid #333;
+            padding: 12px;
+            margin: 10px 0 20px 0;
+            border-radius: 6px;
+            width: 80%;
+            font-family: inherit;
+            text-align: center;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-color: #00ffcc;
+            box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+        }
         button {
             background: transparent;
             color: #00ffcc;
@@ -49,7 +67,6 @@
             color: #0f0f11;
             box-shadow: 0 0 10px #00ffcc;
         }
-        /* Special style for the startup screen */
         #initScreen {
             display: flex;
             flex-direction: column;
@@ -62,13 +79,19 @@
             font-size: 32px;
             color: #fff;
             letter-spacing: 5px;
-            margin: 20px 0;
+            margin: 10px 0;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         .status {
             font-size: 14px;
             color: #aaa;
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+        #remoteNameDisplay {
+            color: #ffaa00; /* Yellow highlight for the joined person's name */
+            font-size: 18px;
+            margin-top: 15px;
+            min-height: 20px;
         }
         audio {
             display: none;
@@ -79,7 +102,8 @@
 
     <div class="container" id="initScreen">
         <h2>SECURE COMMS</h2>
-        <p style="font-size: 14px; color: #888; margin-bottom: 20px;">Tap below to initialize microphone.</p>
+        <input type="text" id="userNameInput" placeholder="Enter your Alias/Name..." autocomplete="off">
+        <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Tap below to initialize microphone.</p>
         <button id="enableMicBtn">Enable Mic & Enter</button>
         <p id="errorMsg" style="color: #ff3366; font-size: 12px; display: none; margin-top: 15px;"></p>
     </div>
@@ -93,8 +117,9 @@
 
     <div class="container" id="roomArea">
         <h2>LIVE CONNECTION</h2>
-        <p>Room Key:</p>
+        <p style="margin: 5px 0;">Room Key:</p>
         <div class="key-display" id="roomIdDisplay">----</div>
+        <div id="remoteNameDisplay"></div>
         <p class="status" id="statusText">Waiting for connection...</p>
         <button id="endBtn" style="border-color: #ff3366; color: #ff3366; margin-top: 20px;">End Call</button>
     </div>
@@ -104,10 +129,12 @@
     <script>
         let peer;
         let localStream;
+        let myName = "Anonymous"; // Default name
         const secretPrefix = "phantom-call-"; 
 
         const initScreen = document.getElementById('initScreen');
         const enableMicBtn = document.getElementById('enableMicBtn');
+        const userNameInput = document.getElementById('userNameInput');
         const errorMsg = document.getElementById('errorMsg');
         
         const mainMenu = document.getElementById('mainMenu');
@@ -117,15 +144,20 @@
         const roomArea = document.getElementById('roomArea');
         const roomIdDisplay = document.getElementById('roomIdDisplay');
         const statusText = document.getElementById('statusText');
+        const remoteNameDisplay = document.getElementById('remoteNameDisplay');
         const endBtn = document.getElementById('endBtn');
         const remoteAudio = document.getElementById('remoteAudio');
 
-        // --- STEP 1: ENABLE MIC ON BUTTON TAP (Fix for Mobile) ---
+        // --- STEP 1: GET NAME & ENABLE MIC ---
         enableMicBtn.onclick = async () => {
+            const enteredName = userNameInput.value.trim();
+            if (enteredName !== "") {
+                myName = enteredName;
+            }
+            
             enableMicBtn.innerText = "Requesting...";
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                // If success, hide start screen and show Main Menu
                 initScreen.style.display = 'none';
                 mainMenu.style.display = 'block';
             } catch (error) {
@@ -145,12 +177,25 @@
             peer.on('open', (id) => {
                 mainMenu.style.display = 'none';
                 roomArea.style.display = 'block';
-                statusText.innerText = "Waiting for your friend to join...";
+                statusText.innerText = "Waiting for someone to join...";
             });
 
+            // Listen for Text/Data Connection (For exchanging names)
+            peer.on('connection', (conn) => {
+                conn.on('open', () => {
+                    conn.send({ name: myName }); // Send my name to the joiner
+                });
+                conn.on('data', (data) => {
+                    if (data.name) {
+                        remoteNameDisplay.innerText = "Connected with: " + data.name;
+                    }
+                });
+            });
+
+            // Listen for Voice Connection
             peer.on('call', (call) => {
                 call.answer(localStream);
-                statusText.innerText = "Connected! Start talking. 🎙️";
+                statusText.innerText = "Call active! 🎙️";
                 statusText.style.color = "#00ffcc";
                 
                 call.on('stream', (remoteStream) => {
@@ -172,10 +217,22 @@
                     roomIdDisplay.innerText = roomKey;
                     statusText.innerText = "Connecting to room...";
 
+                    // 1. Start Text/Data Connection (For exchanging names)
+                    const conn = peer.connect(secretPrefix + roomKey);
+                    conn.on('open', () => {
+                        conn.send({ name: myName }); // Send my name to the creator
+                    });
+                    conn.on('data', (data) => {
+                        if (data.name) {
+                            remoteNameDisplay.innerText = "Connected with: " + data.name;
+                        }
+                    });
+
+                    // 2. Start Voice Connection
                     const call = peer.call(secretPrefix + roomKey, localStream);
 
                     call.on('stream', (remoteStream) => {
-                        statusText.innerText = "Connected! Start talking. 🎙️";
+                        statusText.innerText = "Call active! 🎙️";
                         statusText.style.color = "#00ffcc";
                         remoteAudio.srcObject = remoteStream;
                     });
