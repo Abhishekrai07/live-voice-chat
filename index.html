@@ -25,13 +25,16 @@
     </div>
 
     <div class="container" id="initScreen">
+        <img src="https://raw.githubusercontent.com/Abhishekrai07/live-voice-chat/main/Watermark.png" alt="Phantom Logo" class="brand-logo">
+        
         <h2>SECURE GATEWAY</h2>
         <input type="text" id="userNameInput" placeholder="Enter your Name" autocomplete="off">
-        <button id="enableMicBtn">Initialize Comm</button>
+        <button id="enableMicBtn">Initialize Communication</button>
         <p id="errorMsg" style="color: #ff3366; font-size: 13px; display: none; margin-top: 15px; font-weight: bold;"></p>
     </div>
 
     <div class="container" id="mainMenu">
+        <img src="https://raw.githubusercontent.com/Abhishekrai07/live-voice-chat/main/Watermark.png" alt="Phantom Logo" class="brand-logo-small">
         <h2>VOICE ROOM</h2>
         <p id="welcomeUserText" style="color: #00ffcc; font-size: 14px; margin-top: -15px; font-weight: bold;"></p>
         <button id="createBtn">Create Room</button>
@@ -41,7 +44,7 @@
     <div class="container" id="roomArea">
         <div class="room-name-display" id="roomNameDisplay">ROOM: -----</div>
         <p style="margin: 5px 0; font-size: 14px; color: #888;">Invite Key:</p>
-        <div class="key-display" id="roomIdDisplay">----</div>
+        <div class="key-display" id="roomIdDisplay">-----</div>
         <p class="status" id="statusText">System initialized...</p>
         
         <div class="room-layout">
@@ -109,6 +112,9 @@
                         </div>
                         <iframe id="genericIframe" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation" style="display:none;"></iframe>
                     </div>
+                    
+                    <button id="cinemaBtn" class="btn-cinema">Enter Cinema Mode 🔲</button>
+
                     <p id="syncWarning">⚠️ Note: Generic website detected. Video syncing by Host is disabled for this link.</p>
                     
                     <div id="videoWaitingText" style="color: #555; text-align: center; margin-top: 30px; font-size: 13px;">Waiting for Host to start media...</div>
