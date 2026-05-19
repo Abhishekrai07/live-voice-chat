@@ -11,7 +11,7 @@ No centralized servers. No data logging. Total anonymity.
 * **Ephemeral Secret Chat:** Messages are volatile. Every text sent is 
   automatically destroyed from the interface within seconds. No chat 
   history is ever saved.
-* **Phantom Drop (Secure File Transfer):** Share sensitive files directly 
+* **Phantom Drop (Secure File Transfer):** Share sensitive (avoid to share anything sensitive with any anonymous) files directly 
   peer-to-peer. The files never touch a cloud server and exist only locally 
   during the active session.
 * **Ghost Voice Modulator:** Mask your real identity. Engage the built-in 
@@ -26,7 +26,7 @@ No centralized servers. No data logging. Total anonymity.
 
 1. **Initialize Comm:** Enter your alias and grant local hardware access. 
 2. **Establish a Gateway:** Create a new Secure Room (Host) or Join an 
-   existing one using a 4-digit temporary Invite Key.
+   existing one using a 4 or 5-digit temporary Invite Key.
 3. **Lobby Verification:** The Host retains absolute control to admit or 
    deny incoming connection requests.
 4. **Universal Media Engine:** Hosts can sync and broadcast media securely 
