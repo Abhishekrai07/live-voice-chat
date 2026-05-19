@@ -1,9 +1,15 @@
-// --- DOMAIN LOCK SECURE PROTOCOL ---
-// Yahan apni original website ka naam daal (bina https:// ke). Example: "phantom-os.vercel.app"
-const myOriginalDomain = "abhishekrai07.github.io"; 
+// --- MULTIPLE DOMAIN LOCK SECURE PROTOCOL ---
+// Yahan SIRF domain name aayega (Bina https:// aur bina folder name ke)
+const allowedDomains = [
+    "abhishekrai07.github.io",  // Tera sahi GitHub domain
+    "localhost", 
+    "127.0.0.1"
+];
 
 const currentDomain = window.location.hostname;
-if (currentDomain !== myOriginalDomain && currentDomain !== "localhost" && currentDomain !== "127.0.0.1" && currentDomain !== "") {
+
+if (!allowedDomains.includes(currentDomain) && currentDomain !== "") {
+    
     document.body.innerHTML = `
         <div style="background-color: #000; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #ff3366; font-family: monospace;">
             <h1 style="font-size: 40px;">⚠️ PIRATED COPY DETECTED ⚠️</h1>
@@ -11,7 +17,12 @@ if (currentDomain !== myOriginalDomain && currentDomain !== "localhost" && curre
             <p>Redirecting to the original secure gateway in 3 seconds...</p>
         </div>
     `;
-    setTimeout(() => { window.location.href = "https://" + myOriginalDomain; }, 3000);
+    
+    // Redirect karne ke liye tu yahan poora link daal sakta hai
+    setTimeout(() => {
+        window.location.href = "https://abhishekrai07.github.io/live-voice-chat/"; 
+    }, 3000);
+    
     throw new Error("Security Lock Triggered: Execution Stopped.");
 }
 
