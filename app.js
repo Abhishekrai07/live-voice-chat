@@ -1,6 +1,6 @@
 // --- DOMAIN LOCK SECURE PROTOCOL ---
 // Yahan apni original website ka naam daal (bina https:// ke). Example: "phantom-os.vercel.app"
-const myOriginalDomain = "https://abhishekrai07.github.io/live-voice-chat/"; 
+const myOriginalDomain = "abhishekrai07.github.io"; 
 
 const currentDomain = window.location.hostname;
 if (currentDomain !== myOriginalDomain && currentDomain !== "localhost" && currentDomain !== "127.0.0.1" && currentDomain !== "") {
