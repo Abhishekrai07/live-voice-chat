@@ -24,7 +24,7 @@ No centralized servers. No data logging. Total anonymity.
 
 ## ⚙️ How to Operate
 
-1. **Initialize Comm:** Enter your alias and grant local hardware access. 
+1. **Initialize Communication:** Enter your alias and grant local hardware access. 
 2. **Establish a Gateway:** Create a new Secure Room (Host) or Join an 
    existing one using a 4 or 5-digit temporary Invite Key.
 3. **Lobby Verification:** The Host retains absolute control to admit or 
