@@ -13,6 +13,24 @@ body {
 }
 
 .container.room-active { max-width: 950px; padding: 20px; }
+
+/* --- LOGO STYLES (NEW) --- */
+.brand-logo {
+    max-width: 120px;
+    margin-bottom: -5px;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 204, 0.5));
+    animation: neonPulse 2s infinite alternate;
+}
+.brand-logo-small {
+    max-width: 80px;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.4));
+}
+@keyframes neonPulse {
+    from { filter: drop-shadow(0 0 5px rgba(0, 255, 204, 0.2)); }
+    to { filter: drop-shadow(0 0 15px rgba(0, 255, 204, 0.8)); }
+}
+
 h2 { color: #00ffcc; letter-spacing: 2px; margin-bottom: 20px; }
 
 input {
@@ -104,6 +122,10 @@ canvas.visualizer { width: 40px; height: 15px; background: transparent; border-r
 .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; border: 1px solid #333; display: none; }
 .video-wrapper video, .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 #syncWarning { color: #ffaa00; font-size: 11px; margin-top: 10px; display: none; text-align: left; }
+
+/* Cinema Mode Button */
+.btn-cinema { background: #111; color: #fff; border: 1px solid #00ffcc; padding: 10px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; display: none; transition: 0.3s; }
+.btn-cinema:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
 
 /* --- CONTROLS & UTILS --- */
 .controls-row { display: flex; justify-content: space-between; width: 100%; margin-top: 15px; gap: 8px; }
