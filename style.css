@@ -8,7 +8,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: #111; }
 
-/* BASE CONTAINER (Mobile First - Narrow) */
+/* BASE CONTAINER (Login & Menu) */
 .container {
     background: #1a1a1d; 
     padding: 25px; 
@@ -16,10 +16,15 @@ body {
     box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
     text-align: center; 
     width: 95%; 
-    max-width: 400px; /* Mobile par narrow rahega */
+    max-width: 450px; /* Login screen limited rahegi */
     border: 1px solid #333; 
     position: relative; 
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* FIX: Targeting Room Area Directly to bypass JS Bug */
+#roomArea {
+    max-width: 100%; /* Mobile par poora fit aayega */
 }
 
 /* --- LOGO STYLES --- */
@@ -64,7 +69,7 @@ button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc
 /* --- ROOM LAYOUT (Mobile Default - Stacked) --- */
 .room-layout { 
     display: flex; 
-    flex-direction: column; /* Mobile par upar-neeche */
+    flex-direction: column; 
     gap: 20px; 
     width: 100%; 
 }
@@ -172,39 +177,26 @@ canvas.visualizer { width: 40px; height: 15px; background: transparent; border-r
 #audioContainer { display: none; }
 
 /* =========================================================
-   --- DESKTOP / LAPTOP RESPONSIVE UI (THE FIX) --- 
+   --- DESKTOP / LAPTOP RESPONSIVE UI (THE FINAL FIX) --- 
    ========================================================= */
 @media (min-width: 850px) {
-    /* Login aur Menu ko thoda aur wide karenge laptop par */
-    .container { max-width: 480px; }
+    .container { max-width: 500px; } /* Login box limit */
 
-    /* Jab room activate hoga, tab container screen ki chaudaayi (width) lega */
-    .container.room-active { 
-        max-width: 1200px; /* Ye box ko poora failne dega */
-        width: 95%;
+    /* Ab RoomArea forcefully laptop par wide hoga */
+    #roomArea { 
+        max-width: 1200px !important; 
         padding: 30px; 
     }
 
-    /* Force side-by-side layout on desktop */
     .room-layout { 
-        flex-direction: row; /* Left aur Right panel ko side-by-side karega */
+        flex-direction: row; 
         align-items: stretch; 
         justify-content: space-between;
     }
 
-    /* Left Panel (Controls) ko 30% space denge */
-    .left-panel { 
-        flex: 1; 
-        max-width: 350px; 
-    }
+    .left-panel { flex: 1; max-width: 350px; }
+    .right-panel { flex: 2.5; height: 600px; }
 
-    /* Right Panel (Chat/Video) ko 70% space denge */
-    .right-panel { 
-        flex: 2.5; 
-        height: 600px; 
-    }
-
-    /* Elements scaling */
     .brand-logo { max-width: 150px; }
     h2 { font-size: 32px; }
     input { font-size: 18px; padding: 15px; }
