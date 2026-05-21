@@ -2,19 +2,27 @@
 body {
     background-color: #0f0f11; color: #e0e0e0; font-family: 'Courier New', Courier, monospace;
     display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box;
+    background: radial-gradient(circle at center, #1a1a1d 0%, #0f0f11 70%);
 }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: #111; }
 
+/* BASE CONTAINER (Mobile First - Narrow) */
 .container {
-    background: #1a1a1d; padding: 25px; border-radius: 12px; box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
-    text-align: center; width: 100%; max-width: 400px; border: 1px solid #333; position: relative; transition: all 0.3s ease;
+    background: #1a1a1d; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
+    text-align: center; 
+    width: 95%; 
+    max-width: 400px; /* Mobile par narrow rahega */
+    border: 1px solid #333; 
+    position: relative; 
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.container.room-active { max-width: 950px; padding: 20px; }
-
-/* --- LOGO STYLES (NEW) --- */
+/* --- LOGO STYLES --- */
 .brand-logo {
     max-width: 120px;
     margin-bottom: -5px;
@@ -53,10 +61,19 @@ button:hover { background: #00ffcc; color: #0f0f11; box-shadow: 0 0 10px #00ffcc
 .status { font-size: 14px; color: #aaa; margin-top: 5px; margin-bottom: 15px; font-weight: bold; }
 .room-name-display { color: #ffaa00; font-size: 18px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
 
-/* --- ROOM LAYOUT --- */
-.room-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; align-items: stretch; }
-.left-panel { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; align-items: center; }
-.right-panel { flex: 1.8; min-width: 320px; display: flex; flex-direction: column; background: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; height: 500px; }
+/* --- ROOM LAYOUT (Mobile Default - Stacked) --- */
+.room-layout { 
+    display: flex; 
+    flex-direction: column; /* Mobile par upar-neeche */
+    gap: 20px; 
+    width: 100%; 
+}
+.left-panel { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.right-panel { 
+    display: flex; flex-direction: column; background: #111; 
+    border: 1px solid #333; border-radius: 8px; overflow: hidden; 
+    width: 100%; min-height: 450px; 
+}
 
 /* --- TABS UI --- */
 .tabs-header { display: flex; border-bottom: 1px solid #333; background: #1a1a1d; }
@@ -153,3 +170,43 @@ canvas.visualizer { width: 40px; height: 15px; background: transparent; border-r
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
 #audioContainer { display: none; }
+
+/* =========================================================
+   --- DESKTOP / LAPTOP RESPONSIVE UI (THE FIX) --- 
+   ========================================================= */
+@media (min-width: 850px) {
+    /* Login aur Menu ko thoda aur wide karenge laptop par */
+    .container { max-width: 480px; }
+
+    /* Jab room activate hoga, tab container screen ki chaudaayi (width) lega */
+    .container.room-active { 
+        max-width: 1200px; /* Ye box ko poora failne dega */
+        width: 95%;
+        padding: 30px; 
+    }
+
+    /* Force side-by-side layout on desktop */
+    .room-layout { 
+        flex-direction: row; /* Left aur Right panel ko side-by-side karega */
+        align-items: stretch; 
+        justify-content: space-between;
+    }
+
+    /* Left Panel (Controls) ko 30% space denge */
+    .left-panel { 
+        flex: 1; 
+        max-width: 350px; 
+    }
+
+    /* Right Panel (Chat/Video) ko 70% space denge */
+    .right-panel { 
+        flex: 2.5; 
+        height: 600px; 
+    }
+
+    /* Elements scaling */
+    .brand-logo { max-width: 150px; }
+    h2 { font-size: 32px; }
+    input { font-size: 18px; padding: 15px; }
+    button { font-size: 18px; padding: 15px 30px; }
+}
